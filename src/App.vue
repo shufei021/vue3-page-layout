@@ -178,6 +178,58 @@ const config = {
                         }
                     }
                 ],
+                batchBtns: [
+                    {
+                        type: 'undo',
+                        name: '取消订单',
+                        click: (row) => {
+                            console.log('%c [ click ]-77', 'font-size:13px; background:pink; color:#bf2c9f;', row)
+                        }
+                    },
+                    {
+                        type: 'del',
+                        click: (row) => {
+                            console.log('%c [ click ]-77', 'font-size:13px; background:pink; color:#bf2c9f;', row)
+                        }
+                    },
+                    {
+                        type: 'enable',
+                        click: (row) => {
+                            console.log('%c [ click ]-77', 'font-size:13px; background:pink; color:#bf2c9f;', row)
+                        }
+                    },
+                    {
+                        type: 'print',
+                        click: (row) => {
+                            console.log('%c [ click ]-77', 'font-size:13px; background:pink; color:#bf2c9f;', row)
+                        }
+                    },
+                    {
+                        type: 'review',
+                        click: (row) => {
+                            console.log('%c [ click ]-77', 'font-size:13px; background:pink; color:#bf2c9f;', row)
+                        }
+                    },
+                    {
+                        type: 'disable',
+                        click: (row) => {
+                            console.log('%c [ click ]-77', 'font-size:13px; background:pink; color:#bf2c9f;', row)
+                        }
+                    },
+                    {
+                        type: 'pass',
+                        click: (row) => {
+                            console.log('%c [ click ]-77', 'font-size:13px; background:pink; color:#bf2c9f;', row)
+                        }
+                    },
+                    {
+                        type: 'reject',
+                        click: (row) => {
+                            console.log('%c [ click ]-77', 'font-size:13px; background:pink; color:#bf2c9f;', row)
+                        }
+                    },
+               
+                ],
                 api,
                 index: true,
                 page:true

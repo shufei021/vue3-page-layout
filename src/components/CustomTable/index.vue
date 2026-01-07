@@ -88,52 +88,35 @@
         <span class="line" v-if="isCurHasSelected"></span>
         <el-checkbox v-model="isCancelChecked">已选 {{ selectNum }}条</el-checkbox>
         <span class="line"></span>
-        <div class="batch-options-list-btn">
-          <a class="select-btn">
-            <div class="icon-font-wrap"> <Undo style="color: red; margin-right: 5px;" /> </div>
-            <span class="select-text">撤销</span>
+        <div class="batch-options-list-btn" ref="containerRef">
+          <!-- 所有按钮先渲染在“测量区”（隐藏） -->
+          <div ref="measureRef" class="measure-area" >
+            <a class="select-btn" ref="buttonRefs" v-for="(btn,index) in batchBtns" :key="index" @click="btn.click(btn)"  style="visibility: hidden; position: absolute; white-space: nowrap;box-sizing: border-box;">
+              <div class="icon-font-wrap">
+                <SvgcIcon :name="btn.type" style="margin-right: 5px;"></SvgcIcon>
+                </div>
+              <span class="select-text">{{ btn.name }}</span>
+            </a>
+          </div>
+          <!-- 实际显示区域 -->
+          <a class="select-btn" v-for="(btn,index) in visibleButtons" :key="index" @click="btn.click(btn)" :style="{minWidth: btn.width}">
+            <div class="icon-font-wrap">
+               <SvgcIcon :name="btn.type" style="margin-right: 5px;"></SvgcIcon>
+              </div>
+            <span class="select-text">{{ btn.name }}</span>
           </a>
-           <a class="select-btn">
-            <div class="icon-font-wrap"> <Del style="color: red; margin-right: 5px;" /> </div>
-            <span class="select-text">删除</span>
-          </a>
-          <a class="select-btn">
-            <div class="icon-font-wrap"> <Enable style="color: red; margin-right: 5px;" /> </div>
-            <span class="select-text">启用</span>
-          </a>
-          <a class="select-btn">
-            <div class="icon-font-wrap"> <Print style="color: red; margin-right: 5px;" /> </div>
-            <span class="select-text">打印</span>
-          </a>
-          <a class="select-btn">
-            <div class="icon-font-wrap"> <Review style="color: red; margin-right: 5px;" /> </div>
-            <span class="select-text">审核</span>
-          </a>
-          <a class="select-btn">
-            <div class="icon-font-wrap"> <Disable style="color: red; margin-right: 5px;" /> </div>
-            <span class="select-text">禁用</span>
-          </a>
-          <a class="select-btn">
-            <div class="icon-font-wrap"> <Pass style="color: red; margin-right: 5px;" /> </div>
-            <span class="select-text">通过</span>
-          </a>
-          <a class="select-btn">
-            <div class="icon-font-wrap"> <Reject style="color: red; margin-right: 5px;" /> </div>
-            <span class="select-text">拒绝</span>
-          </a>
-           <el-dropdown>
+
+          <el-dropdown  v-if="hiddenButtons.length">
             <el-button  link>
               更多<el-icon class="el-icon--right"><arrow-down /></el-icon>
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item><Reject style="color: red; margin-right: 5px;" /> <span class="select-text">拒绝</span></el-dropdown-item>
-                <el-dropdown-item><Pass style="color: red; margin-right: 5px;" /><span class="select-text">通过</span></el-dropdown-item>
-                <el-dropdown-item><Disable style="color: red; margin-right: 5px;" /><span class="select-text">禁用</span></el-dropdown-item>
-                <el-dropdown-item><Review style="color: red; margin-right: 5px;" /> <span class="select-text">审核</span></el-dropdown-item>
+                <el-dropdown-item v-for="btn in hiddenButtons" :key="btn.name" :command="btn.name"> <SvgcIcon :name="btn.type" style="margin-right: 5px;"></SvgcIcon> <span class="select-text">{{ btn.name }}</span></el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
+
         </div>
       </div>
       <div class="bt">
@@ -151,9 +134,11 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch,onMounted, onUnmounted,nextTick } from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
 import useSelection from './composables/useSelection.js'
+import SvgcIcon from '../SvgIcon/index.vue'
+
 import Undo from '@/assets/undo.svg'
 import Del from '@/assets/del.svg'
 import Enable from '@/assets/enable.svg'
@@ -163,6 +148,17 @@ import Disable from '@/assets/disable.svg'
 import Pass from '@/assets/pass.svg'
 import Reject from '@/assets/reject.svg'
 
+const actionMap = {
+  'undo': { name: '撤销', click: (row, index) => { console.log('撤销', row, index) } },
+  'del': { name: '删除', type: 'danger', click: (row, index) => { console.log('删除', row, index) } },
+  'enable': { name: '启用', click: (row, index) => { console.log('启用', row, index) } },
+  'print': { name: '打印', click: (row, index) => { console.log('打印', row, index) } },
+  'review': { name: '审核', click: (row, index) => { console.log('审核', row, index) } },
+  'disable': { name: '禁用', type: 'danger', click: (row, index) => { console.log('禁用', row, index) } },
+  'pass': { name: '通过', click: (row, index) => { console.log('通过', row, index) } },
+  'reject': { name: '拒绝', type: 'danger', click: (row, index) => { console.log('拒绝', row, index) } },
+  'batch-options': { name: '更多', click: (row, index) => { console.log('更多', row, index) } },
+}
 
 const props = defineProps({
   config: {
@@ -189,7 +185,6 @@ const props = defineProps({
 })
 
 // 表格配置
-
 const Table = computed(() => {
   const defaultConfig = {
     data: [], // 数据源
@@ -250,6 +245,59 @@ const Page = computed(() => {
   }
 })
 
+// 批量操作按钮
+const batchBtns = computed(() => {
+  return Table.value.config.batchBtns.map(item => {
+    return {
+      ...actionMap[item.type],
+      ...item
+    }
+  })
+})
+
+const containerRef = ref(null);// 默认显示前6个
+const measureRef = ref(null);
+const buttonRefs = ref([]);
+
+const hiddenButtons = ref([]); // 其余隐藏
+const visibleButtons = ref([]);
+
+
+let timer = null
+// 计算哪些按钮可见
+const calculateVisibleButtons =  () => {
+  clearTimeout(timer)
+  timer = setTimeout(() => {
+    const container = containerRef.value;
+    const measureArea = measureRef.value;
+    const buttons = batchBtns.value;
+    if (!container || !measureArea) return;
+  
+    const containerWidth = container.clientWidth;
+    let totalWidth = 0;
+    let visibleCount = 0;
+  
+    // “更多”按钮预留宽度（约 53px）
+    const moreButtonWidth = 53;
+   
+    // 遍历每个按钮的实际宽度
+    for (let i = 0; i < buttonRefs.value.length; i++) {
+      const btnEl = buttonRefs.value[i];
+      const btnWidth = btnEl?.offsetWidth || 73; // fallback
+      batchBtns.value[i].width = btnWidth + 'px'
+      // 如果加上这个按钮会超出（且还有剩余按钮），就停止
+      if (totalWidth + btnWidth + moreButtonWidth > containerWidth && i < buttons.length - 1) {
+        break;
+      }
+      totalWidth += btnWidth;
+      visibleCount = i + 1;
+    }
+
+    visibleButtons.value = buttons.slice(0, visibleCount);
+    hiddenButtons.value = buttons.slice(visibleCount);
+  }, 300)
+};
+
 // 事件
 const emit = defineEmits([
   'selection-change',
@@ -273,22 +321,28 @@ const {
   cancelCurSelection,
   selectNum
 } = useSelection(Table, tableData, Page)
+
 const isCancelChecked = ref(false);
+
 watch(selectNum, (val) => {
   isCancelChecked.value = val > 0;
+  if(val){
+    nextTick(() => {
+      calculateVisibleButtons();
+    });
+  }
 })
 watch(isCancelChecked, (val) => {
   if (!val) {
     handleCommand('cancel');
   }
 })
-
-
 // 处理排序变化
 const handleSortChange = (sort) => {
   emit('sort-change', sort)
 }
 
+// 取消选择当前页
 const cancel = () => {
   isCurAllSelected.value = false;
   isIndeterminate.value = false;
@@ -302,6 +356,7 @@ const renderDefaultCell = (row, column) => {
   }
   return row[column.prop] || '-'
 }
+
 // 处理每页条数改变
 const handleSizeChange = (val) => {
   defaultPageProps.value.currentPage = 1
@@ -341,8 +396,21 @@ const updateList = () => {
     loading.value = false;
   })
 }
+
 updateList();
 
+const resize = ()=>{
+  nextTick(() => {
+    calculateVisibleButtons();
+  });
+}
+onMounted(()=>{
+  window.addEventListener('resize', resize)
+  resize()
+})
+onUnmounted(()=>{
+  window.removeEventListener('resize', resize)
+})
 defineExpose({
   tableRef,
   handleCommand,
@@ -415,6 +483,7 @@ defineExpose({
 }
 
 .select-btn {
+  min-width: 73px;
   display: block;
   height: 48px;
   line-height: 48px;
@@ -426,6 +495,7 @@ defineExpose({
   cursor: pointer;
   transition: color .3s;
   display: flex;
+  box-sizing: border-box;
 }
 
 .icon-font-wrap {
@@ -446,6 +516,8 @@ defineExpose({
 }
 .batch-options-list-btn {
   display: flex;
+  flex: 1;
+  overflow: hidden;
 }
 .batch-options-list-btn .select-btn:hover {
     background: #e7ecff;
