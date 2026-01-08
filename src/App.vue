@@ -36,6 +36,7 @@ const api = (page) => {
 
 const config = {
     form:{
+        showRest: true,
          formItems: [
         {
             prop: 'keyword',

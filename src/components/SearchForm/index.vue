@@ -16,9 +16,11 @@
                             <DynamicFormComp 
                                 v-model="form[item.prop]" 
                                 :model-event="item.modelEvent || 'input'"
-                                :comp-type="item.compType" :events="item.events || {}"
+                                :comp-type="item.compType" 
+                                :events="item.events || {}"
                                 :comp-props="{ 
-                                    ...item.compProps, 
+                                    clearable:true,
+                                    ...item.compProps,
                                     ...(item.compProps && item.compProps.placeholder ? { placeholder: item.compProps.placeholder } : {}), 
                                     ...(item.compType === 'ElDatePicker' ? { startPlaceholder: item.compProps.startPlaceholder || '开始日期', endPlaceholder: item.compProps.endPlaceholder || '结束日期' } : {}) 
                                 }">
@@ -27,7 +29,7 @@
                         <!-- <CollectionCategory v-if="formCategory" :form="form" /> -->
                     </div>
                     <div class="btn-group">
-                        <el-button @click="reset" v-if="showRest" style="width: 106px;">重置</el-button>
+                        <el-button @click="reset" v-if="showRest && !isMore" style="width: 106px;">重置</el-button>
                         <el-button @click="submit" type="primary">
                             <SearchQuery></SearchQuery> 
                             查询
@@ -220,11 +222,14 @@ defineExpose({
 
         .btn-group {
             padding-left: 10px;
-
+            width: 156px;
+            display: flex;
+            justify-content: end;
             :deep(.el-button) {
+                flex: 1;
                 flex-grow: 0;
                 flex-shrink: 0;
-                height: 100%;
+                // height: 100%;
                 height: 32px;
                 line-height: 32px;
                 border-radius: 4px !important;

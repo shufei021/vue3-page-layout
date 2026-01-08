@@ -106,13 +106,13 @@
             <span class="select-text">{{ btn.name }}</span>
           </a>
 
-          <el-dropdown  v-if="hiddenButtons.length">
+          <el-dropdown  v-if="hiddenButtons.length" @command="(btn)=>btn.click(btn)">
             <el-button  link>
               更多<el-icon class="el-icon--right"><arrow-down /></el-icon>
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item v-for="btn in hiddenButtons" :key="btn.name" :command="btn.name"> <SvgcIcon :name="btn.type" style="margin-right: 5px;"></SvgcIcon> <span class="select-text">{{ btn.name }}</span></el-dropdown-item>
+                <el-dropdown-item v-for="btn in hiddenButtons" :key="btn.name" :command="btn"> <SvgcIcon :name="btn.type" style="margin-right: 5px;"></SvgcIcon> <span class="select-text">{{ btn.name }}</span></el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -139,25 +139,21 @@ import { ArrowDown } from '@element-plus/icons-vue'
 import useSelection from './composables/useSelection.js'
 import SvgcIcon from '../SvgIcon/index.vue'
 
-import Undo from '@/assets/undo.svg'
-import Del from '@/assets/del.svg'
-import Enable from '@/assets/enable.svg'
-import Print from '@/assets/print.svg'
-import Review from '@/assets/review.svg'
-import Disable from '@/assets/disable.svg'
-import Pass from '@/assets/pass.svg'
-import Reject from '@/assets/reject.svg'
-
+// 批量操作映射
 const actionMap = {
-  'undo': { name: '撤销', click: (row, index) => { console.log('撤销', row, index) } },
-  'del': { name: '删除', type: 'danger', click: (row, index) => { console.log('删除', row, index) } },
-  'enable': { name: '启用', click: (row, index) => { console.log('启用', row, index) } },
-  'print': { name: '打印', click: (row, index) => { console.log('打印', row, index) } },
-  'review': { name: '审核', click: (row, index) => { console.log('审核', row, index) } },
-  'disable': { name: '禁用', type: 'danger', click: (row, index) => { console.log('禁用', row, index) } },
-  'pass': { name: '通过', click: (row, index) => { console.log('通过', row, index) } },
-  'reject': { name: '拒绝', type: 'danger', click: (row, index) => { console.log('拒绝', row, index) } },
-  'batch-options': { name: '更多', click: (row, index) => { console.log('更多', row, index) } },
+  'undo': { name: '撤销',type:'undo', click: (row) => { console.log('撤销', row) } },
+  'del': { name: '删除',type:'del', click: (row) => { console.log('删除', row) } },
+  'enable': { name: '启用',type:'enable', click: (row) => { console.log('启用', row) } },
+  'print': { name: '打印',type:'print', click: (row) => { console.log('打印', row) } },
+  'review': { name: '审核',type:'review', click: (row) => { console.log('审核', row) } },
+  'disable': { name: '禁用',type:'disable', click: (row) => { console.log('禁用', row) } },
+  'pass': { name: '通过', click: (row) => { console.log('通过', row) } },
+  'reject': { name: '拒绝', click: (row) => { console.log('拒绝', row) } },
+}
+
+const actionInfo = {
+  isLoad: false,
+  with:[]
 }
 
 const props = defineProps({
@@ -284,13 +280,21 @@ const calculateVisibleButtons =  () => {
     for (let i = 0; i < buttonRefs.value.length; i++) {
       const btnEl = buttonRefs.value[i];
       const btnWidth = btnEl?.offsetWidth || 73; // fallback
-      batchBtns.value[i].width = btnWidth + 'px'
+      if(actionInfo.isLoad === false){
+        actionInfo.with[i] = btnWidth + 'px';
+      }
       // 如果加上这个按钮会超出（且还有剩余按钮），就停止
       if (totalWidth + btnWidth + moreButtonWidth > containerWidth && i < buttons.length - 1) {
         break;
       }
       totalWidth += btnWidth;
       visibleCount = i + 1;
+    }
+    if(actionInfo.isLoad === false){
+      actionInfo.with.forEach((width, index)=>{
+        batchBtns.value[index].width = width;
+      })
+      actionInfo.isLoad = true;
     }
 
     visibleButtons.value = buttons.slice(0, visibleCount);
