@@ -3,6 +3,7 @@
 </template>
 <script setup>
 import Page from "@/components/Page/index.vue";
+import { pa } from "element-plus/es/locales.mjs";
 const api = (page) => {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
@@ -35,6 +36,16 @@ const api = (page) => {
 }
 
 const config = {
+    header:{
+        path:['订单管理','订单列表'],
+        buttons:[
+            {type:'primary',name:'新增',click:()=>{
+                console.log('%c [  ]-47', 'font-size:13px; background:pink; color:#bf2c9f;')
+            }},
+            {type:'primary',name:'导出'},
+            {type:'primary',name:'打印'}
+        ]
+    },
     form:{
         showRest: true,
          formItems: [
