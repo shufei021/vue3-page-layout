@@ -29,8 +29,8 @@
                         <!-- <CollectionCategory v-if="formCategory" :form="form" /> -->
                     </div>
                     <div class="btn-group">
-                        <el-button @click="reset" v-if="showRest && !isMore" style="width: 106px;">重置</el-button>
-                        <el-button @click="submit" type="primary">
+                        <el-button @click="reset" v-if="showRest && !isMore" style="width: 72px;">重置</el-button>
+                        <el-button @click="submit" type="primary" style="margin:0">
                             <SearchQuery></SearchQuery> 
                             查询
                         </el-button>
@@ -50,7 +50,7 @@
     </div>
 </template>
 <script setup>
-import { ref, computed, reactive, watch, toRaw, onMounted, onUnmounted, watchEffect } from 'vue'
+import { ref, computed, reactive, watch, toRaw, onMounted, onUnmounted, watchEffect,nextTick } from 'vue'
 import DynamicFormComp from './DynamicFormComp.vue'
 import SearchQuery from '@/assets/search-icon.svg'
 // import CollectionCategory from './CollectionCategory.vue'
@@ -101,11 +101,14 @@ const expand = () => {
     isOPen.value = !isOPen.value
 }
 const resize = () => {
-    const el = leftRef.value
-    if (el) {
-        const { offsetHeight } = el
-        isMore.value = offsetHeight > 32
-    }
+    nextTick(() => {
+        const el = leftRef.value
+        if (el) {
+            const { offsetHeight } = el
+            console.log('%c [ offsetHeight ]-107', 'font-size:13px; background:pink; color:#bf2c9f;', offsetHeight)
+            isMore.value = offsetHeight > 32
+        }
+    });
 }
 watchEffect(() => {
     resize()
@@ -217,16 +220,16 @@ defineExpose({
                 box-sizing: border-box;
                 // line-height: 30px;
             }
-
         }
 
         .btn-group {
             padding-left: 10px;
-            width: 156px;
+            width: 166px;
             display: flex;
             justify-content: end;
+            gap: 10px;
             :deep(.el-button) {
-                flex: 1;
+                // flex: 1;
                 flex-grow: 0;
                 flex-shrink: 0;
                 // height: 100%;

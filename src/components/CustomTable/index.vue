@@ -530,5 +530,7 @@ defineExpose({
 .batch-options-list-btn .select-btn:hover .icon-font-wrap {
     color: #0052d9!important;
 }
-
+:deep(.el-table .el-table__header-wrapper th) {
+  background-color: #f8f8f9 !important;
+}
 </style>
