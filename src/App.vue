@@ -2,8 +2,10 @@
     <Page :config="config"></Page>
 </template>
 <script setup>
-import Page from "@/components/Page/index.vue";
-import { pa } from "element-plus/es/locales.mjs";
+import {Page} from "@/components/ui"
+import { ElButton,ElTag } from "element-plus";
+
+// import { Location } from '@element-plus/icons-vue'
 const api = (page) => {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
@@ -19,6 +21,7 @@ const api = (page) => {
                     "deliveryCompanyName": "string",
                     "trackingNo": "string",
                     "customerId": 12,
+                    url:'https://gips3.baidu.com/it/u=3935430539,3622545779&fm=3074&app=3074&f=PNG?w=2048&h=2048',
                     "status":  i % 2 ? '0' : 3
                 }
             })
@@ -154,23 +157,53 @@ const config = {
                     {
                         prop: 'id',
                         label: '订单编号',
+                        slots:{
+                            default: (row, h) => {
+                                return h('div', {}, 'AAAA')
+                            },
+                            header: (column,h)=>{ 
+                                return h('div', {}, 'AAAA')
+                            }
+                        }
                     },
                     {
                         prop: 'totalAmount',
                         label: '订单金额',
+                        type: 'currency',
+                        props:{
+                            style:{
+                                color: 'green',
+                            },
+                            textStyle:{
+                                 color: 'blue',
+                            }
+                        }
                     },
     
                     {
                         prop: 'status',
                         label: '订单状态',
-                        // formatter: (row) => {
-                        //     return row.status && t(CUSTOMER_ORDER_STATUS[row.status]) || '-'
-                        // }
+                        slots:{
+                            default: (row, h) => {
+                                return h(ElTag, { type: 'primary' }, row.status)
+                            },
+                            header: (column,h)=>{ 
+                                 return h(ElButton, { type: 'primary', onClick: () => console.log('click') }, '编辑')
+                            }
+                        }
                     },
                     {
                         prop: 'payMethod',
                         label: '支付方式',
-    
+                        type: 'tag',
+                        formatter: (row) => {
+                            return row.payMethod
+                        }
+                    },
+                    {
+                        prop: 'url',
+                        label: '图片',
+                        type: 'img',
                     },
                     {
                         prop: 'createTime',
@@ -179,11 +212,39 @@ const config = {
                     {
                         prop: 'action',
                         label: '操作',
+                        width:300
                     }
                 ],
                 actionBtns: [
                     {
                         name: '详情',
+                        visible:(row)=>{
+                            return row.id %2 === 0
+                        },
+                        props:{
+                            // link:true,
+                            type: 'success',
+                            size: 'small',
+                        },
+                        click: (row) => {
+                            console.log('%c [ click ]-77', 'font-size:13px; background:pink; color:#bf2c9f;', row)
+                        }
+                    },
+                    {
+                        name: '编辑',
+                        type: 'success',
+                        visible:(row)=>{
+                            return  row.id %2 === 1
+                        },
+                        click: (row) => {
+                            console.log('%c [ click ]-77', 'font-size:13px; background:pink; color:#bf2c9f;', row)
+                        }
+                    },
+                    {
+                        name: '开启',
+                        disable: (row)=>{
+                            return row.id %2 === 0
+                        },
                         type: 'primary',
                         click: (row) => {
                             console.log('%c [ click ]-77', 'font-size:13px; background:pink; color:#bf2c9f;', row)

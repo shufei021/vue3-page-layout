@@ -1,7 +1,6 @@
 <template>
   <div class="custom-table" v-loading="loading">
-    <slot name="table-header"></slot>
-    <el-table ref="tableRef" v-bind="{ ...$attrs, ...Table.props }" v-loading="loading" :data="tableData"  size="small"
+    <el-table ref="tableRef" v-bind="{ ...$attrs, ...Table.props }" v-loading="loading" :data="tableData" size="small"
       @sort-change="handleSortChange">
       <!-- 序号列 -->
       <el-table-column v-if="Table.config.index" type="index" :index="Table.config.indexMethod" label="序" width="60"
@@ -35,39 +34,30 @@
           <el-checkbox :model-value="isSelected(row)" @change="(checked) => handleRowCheck(checked, row)" />
         </template>
       </el-table-column>
-
-
+      
       <!-- 数据列 -->
       <template v-for="column in Table.config.columns" :key="column.prop">
         <el-table-column :prop="column.prop" :label="column.label" :width="column.width" :min-width="column.minWidth"
           :align="column.align || 'left'" :fixed="column.fixed" :sortable="column.sortable"
           :show-overflow-tooltip="column.showOverflowTooltip !== false">
-          <template #header="{ column }">
-            <slot :name="`header-${column.prop}`" :column="column">
-              <span>{{ column.label }}</span>
+          <!-- 头部插槽 -->
+          <template #header="{ column:col }">
+            <component v-if="column.slots.header" :is="column.slots.header(col,h)"></component>
+            <slot :name="`header-${col.prop}`" :column="col" v-else>
+              <span>{{ col.label }}</span>
             </slot>
           </template>
+          <!-- 默认列渲染 -->
           <template #default="{ row, $index }">
-
-            <!-- 图片列 -->
-            <el-image v-if="column.isImg"
-              :style="{ width: (column.imgWidth || 48) + 'px', height: (column.imgHeight || 48) + 'px' }"
-              :src="row[column.prop]" :zoom-rate="1.2" :max-scale="7" :min-scale="0.2"
-              :preview-src-list="[row[column.prop]]" fit="cover" hide-on-click-modal preview-teleported />
-
-            <!-- 可扩展列放这里 -->
-
             <!-- 操作列 -->
-            <div class="action-btns" v-else-if="column.prop === 'action' && Table.config.actionBtns.length">
-              <el-button v-for="btn in Table.config.actionBtns" :key="btn.name" :type="btn.type" class="action-btn"
-                v-bind="btn.props || {}" @click="btn.click(row, $index)">
-                {{ btn.name }}
-              </el-button>
+            <div class="action-btns" v-if="column.prop === 'action' && Table.config.actionBtns.length">
+              <component :is="column.slots.default(row)"></component>
             </div>
-
+            <!-- 自定义渲染列 -->
+            <component v-else-if="column.slots.default" :is="column.slots.default(row,h)"></component>
             <!-- 默认列 -->
             <slot :name="`column-${column.prop}`" :row="row" :index="$index" v-else>
-              <span>{{ renderDefaultCell(row, column) }}</span>
+              <span :style="{...(column.props && column.props.style || {})}">{{ renderDefaultCell(row, column) }}</span>
             </slot>
           </template>
 
@@ -90,29 +80,35 @@
         <span class="line"></span>
         <div class="batch-options-list-btn" ref="containerRef">
           <!-- 所有按钮先渲染在“测量区”（隐藏） -->
-          <div ref="measureRef" class="measure-area" >
-            <a class="select-btn" ref="buttonRefs" v-for="(btn,index) in batchBtns" :key="index" @click="btn.click(btn)"  style="visibility: hidden; position: absolute; white-space: nowrap;box-sizing: border-box;">
+          <div ref="measureRef" class="measure-area">
+            <a class="select-btn" ref="buttonRefs" v-for="(btn, index) in batchBtns" :key="index"
+              @click="btn.click(btn)"
+              style="visibility: hidden; position: absolute; white-space: nowrap;box-sizing: border-box;">
               <div class="icon-font-wrap">
                 <SvgcIcon :name="btn.type" style="margin-right: 5px;"></SvgcIcon>
-                </div>
+              </div>
               <span class="select-text">{{ btn.name }}</span>
             </a>
           </div>
           <!-- 实际显示区域 -->
-          <a class="select-btn" v-for="(btn,index) in visibleButtons" :key="index" @click="btn.click(btn)" :style="{minWidth: btn.width}">
+          <a class="select-btn" v-for="(btn, index) in visibleButtons" :key="index" @click="btn.click(btn)"
+            :style="{ minWidth: btn.width }">
             <div class="icon-font-wrap">
-               <SvgcIcon :name="btn.type" style="margin-right: 5px;"></SvgcIcon>
-              </div>
+              <SvgcIcon :name="btn.type" style="margin-right: 5px;"></SvgcIcon>
+            </div>
             <span class="select-text">{{ btn.name }}</span>
           </a>
 
-          <el-dropdown  v-if="hiddenButtons.length" @command="(btn)=>btn.click(btn)">
-            <el-button  link>
+          <el-dropdown v-if="hiddenButtons.length" @command="(btn) => btn.click(btn)">
+            <el-button link>
               更多<el-icon class="el-icon--right"><arrow-down /></el-icon>
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item v-for="btn in hiddenButtons" :key="btn.name" :command="btn"> <SvgcIcon :name="btn.type" style="margin-right: 5px;"></SvgcIcon> <span class="select-text">{{ btn.name }}</span></el-dropdown-item>
+                <el-dropdown-item v-for="btn in hiddenButtons" :key="btn.name" :command="btn">
+                  <SvgcIcon :name="btn.type" style="margin-right: 5px;"></SvgcIcon> <span class="select-text">{{
+                    btn.name }}</span>
+                </el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -121,7 +117,7 @@
       </div>
       <div class="bt">
         <div class="select-info">
-          总 {{ Page.props.total }} 条, 每页显示 {{ Page.props.pageSize }} 条 
+          总 {{ Page.props.total }} 条, 每页显示 {{ Page.props.pageSize }} 条
         </div>
         <el-pagination v-bind="{ ...$attrs, ...Page.props }" @size-change="handleSizeChange"
           @current-change="handleCurrentChange">
@@ -134,26 +130,26 @@
 </template>
 
 <script setup>
-import { computed, ref, watch,onMounted, onUnmounted,nextTick } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted, nextTick, h, Fragment } from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
 import useSelection from './composables/useSelection.js'
 import SvgcIcon from '../SvgIcon/index.vue'
-
+import { ElButton,ElImage, ElTag } from 'element-plus'
 // 批量操作映射
 const actionMap = {
-  'undo': { name: '撤销',type:'undo', click: (row) => { console.log('撤销', row) } },
-  'del': { name: '删除',type:'del', click: (row) => { console.log('删除', row) } },
-  'enable': { name: '启用',type:'enable', click: (row) => { console.log('启用', row) } },
-  'print': { name: '打印',type:'print', click: (row) => { console.log('打印', row) } },
-  'review': { name: '审核',type:'review', click: (row) => { console.log('审核', row) } },
-  'disable': { name: '禁用',type:'disable', click: (row) => { console.log('禁用', row) } },
+  'undo': { name: '撤销', type: 'undo', click: (row) => { console.log('撤销', row) } },
+  'del': { name: '删除', type: 'del', click: (row) => { console.log('删除', row) } },
+  'enable': { name: '启用', type: 'enable', click: (row) => { console.log('启用', row) } },
+  'print': { name: '打印', type: 'print', click: (row) => { console.log('打印', row) } },
+  'review': { name: '审核', type: 'review', click: (row) => { console.log('审核', row) } },
+  'disable': { name: '禁用', type: 'disable', click: (row) => { console.log('禁用', row) } },
   'pass': { name: '通过', click: (row) => { console.log('通过', row) } },
   'reject': { name: '拒绝', click: (row) => { console.log('拒绝', row) } },
 }
 
 const actionInfo = {
   isLoad: false,
-  with:[]
+  with: []
 }
 
 const props = defineProps({
@@ -189,15 +185,89 @@ const Table = computed(() => {
     index: false, // 是否显示序号列
     page: true, // 是否显示分页
     actionBtns: [], // 操作列按钮
-    indexMethod: (index) => {
-      return index + 1 + (defaultPageProps.value.currentPage - 1) * defaultPageProps.value.pageSize
-    }, // 序号列方法
+    // indexMethod: (index) => {  // 序号列方法
+    //   return index + 1 + (defaultPageProps.value.currentPage - 1) * defaultPageProps.value.pageSize
+    // },
   }
   const defaultProps = {
     stripe: false, // 是否显示斑马纹
     border: true, // 是否显示边框
     height: '100%', // 表格高度
     rowKey: 'id', // 行键
+  }
+  const columns = props.config.table?.config?.columns
+  const buttons = props.config.table?.config?.actionBtns
+  if (columns) {
+    columns.forEach(column => {
+      // 没有就初始化一个
+      if(!column.slots){
+        column.slots ={}
+      }
+      if (column.prop === 'action') {
+        column.slots.default = (row) => {
+          if (Object.keys(row).length) {
+            return h(Fragment, {}, buttons.flatMap((btn, index) => {
+              if (typeof btn.visible === 'function') {
+                if (!btn.visible(row)) return []
+              }
+              return [h(ElButton, {
+                key: index,
+                ...(btn.props || {}),
+                disabled: btn.disable ? btn.disable(row) : false,
+                onClick: () => btn.click(row),
+              }, () => btn.name)]
+            }
+            ))
+          }
+        }
+      } else if(column.type === 'img'){
+        column.align="center"
+        column.width = column?.prop?.width  || '80px'
+        column.slots.default = (row) => {
+          const{ prop:{ key,width,height,size } = {} } = column
+          const src = key ? row[key] : row.url || row.imgUrl
+          return h(ElImage, {
+            src,
+            previewSrcList: [src],
+            hideOnClickModal:true,
+            previewTeleported:true,
+            style:{
+              width:  parseInt(width || size || 40) + 'px',
+              height:  parseInt(height || size || 40) + 'px',
+            },
+            ...(column.props || {}),
+          })
+        }
+      } else if(column.type === 'currency'){
+        column.slots.default = (row) => {
+          if (Object.keys(row).length){
+            if(column?.props?.style){
+              column.props.style = { marginRight:'2px',  width:  parseInt(column?.props?.style?.width || column?.props?.size || 12) + 'px',height:  parseInt(column?.props?.style?.height || column?.props?.size|| 12) + 'px',...column.props.style, }
+            }
+            return h(Fragment, {}, [
+              h(column?.props?.currency ||  ArrowDown, {
+                ...(column.props || {}),
+              }),
+              h('span',{
+                style:{
+                  ...(column?.props?.textStyle || {}),
+                }
+              },renderDefaultCell(row,column))
+            ])
+          }
+        }
+      } else if(column.type === 'tag'){
+        column.slots.default = (row) => {
+          if (Object.keys(row).length) {
+            return h(Fragment, {},  h(ElTag, {
+                ...(column.props || {}),
+              },()=> renderDefaultCell(row,column))
+            )
+          }
+        }
+      }
+    })
+    console.log('%c [ columns ]-286', 'font-size:13px; background:pink; color:#bf2c9f;', columns)
   }
   return {
     props: {
@@ -214,8 +284,8 @@ const Table = computed(() => {
 const defaultPageProps = ref({
   total: 0,
   currentPage: 1,
-  pageSize: 50,
-  pageSizes: [50, 100],
+  pageSize: 5,
+  pageSizes: [5, 100],
   background: true,
   layout: 'prev, pager, next, sizes'
 })
@@ -261,26 +331,26 @@ const visibleButtons = ref([]);
 
 let timer = null
 // 计算哪些按钮可见
-const calculateVisibleButtons =  () => {
+const calculateVisibleButtons = () => {
   clearTimeout(timer)
   timer = setTimeout(() => {
     const container = containerRef.value;
     const measureArea = measureRef.value;
     const buttons = batchBtns.value;
     if (!container || !measureArea) return;
-  
+
     const containerWidth = container.clientWidth;
     let totalWidth = 0;
     let visibleCount = 0;
-  
+
     // “更多”按钮预留宽度（约 53px）
     const moreButtonWidth = 53;
-   
+
     // 遍历每个按钮的实际宽度
     for (let i = 0; i < buttonRefs.value.length; i++) {
       const btnEl = buttonRefs.value[i];
       const btnWidth = btnEl?.offsetWidth || 73; // fallback
-      if(actionInfo.isLoad === false){
+      if (actionInfo.isLoad === false) {
         actionInfo.with[i] = btnWidth + 'px';
       }
       // 如果加上这个按钮会超出（且还有剩余按钮），就停止
@@ -290,8 +360,8 @@ const calculateVisibleButtons =  () => {
       totalWidth += btnWidth;
       visibleCount = i + 1;
     }
-    if(actionInfo.isLoad === false){
-      actionInfo.with.forEach((width, index)=>{
+    if (actionInfo.isLoad === false) {
+      actionInfo.with.forEach((width, index) => {
         batchBtns.value[index].width = width;
       })
       actionInfo.isLoad = true;
@@ -330,7 +400,7 @@ const isCancelChecked = ref(false);
 
 watch(selectNum, (val) => {
   isCancelChecked.value = val > 0;
-  if(val){
+  if (val) {
     nextTick(() => {
       calculateVisibleButtons();
     });
@@ -403,16 +473,16 @@ const updateList = () => {
 
 updateList();
 
-const resize = ()=>{
+const resize = () => {
   nextTick(() => {
     calculateVisibleButtons();
   });
 }
-onMounted(()=>{
+onMounted(() => {
   window.addEventListener('resize', resize)
   resize()
 })
-onUnmounted(()=>{
+onUnmounted(() => {
   window.removeEventListener('resize', resize)
 })
 defineExpose({
@@ -508,7 +578,7 @@ defineExpose({
   color: rgb(82, 196, 26);
   font-size: 12px;
   display: flex;
-    align-items: center;
+  align-items: center;
   overflow: hidden;
 }
 
@@ -518,18 +588,22 @@ defineExpose({
   margin-left: 4px;
   font-size: 14px;
 }
+
 .batch-options-list-btn {
   display: flex;
   flex: 1;
   overflow: hidden;
 }
+
 .batch-options-list-btn .select-btn:hover {
-    background: #e7ecff;
-     color: #0052d9;
+  background: #e7ecff;
+  color: #0052d9;
 }
+
 .batch-options-list-btn .select-btn:hover .icon-font-wrap {
-    color: #0052d9!important;
+  color: #0052d9 !important;
 }
+
 :deep(.el-table .el-table__header-wrapper th) {
   background-color: #f8f8f9 !important;
 }
