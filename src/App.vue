@@ -62,7 +62,6 @@ const config = {
             },
             modelEvent: 'input'
         },
-
         {
             prop: 'dateMap',
             compType: 'ElDatePicker',
