@@ -12,7 +12,7 @@ defineOptions({
 const props = defineProps({
     name: String,
 })
-const modules = import.meta.glob('../../assets/**/*.svg', { eager: true });
+const modules = import.meta.glob('../assets/**/*.svg', { eager: true });
 const map = {};
 for (const path in modules) {
     const module = modules[path];
@@ -26,8 +26,8 @@ const iconComponent = computed(() => {
 
 <style scoped>
 .dynamic-icon {
-    width: 16px;
-    height: 16px;
+    /* width: 16px;
+    height: 16px; */
     vertical-align: middle;
 }
 </style>

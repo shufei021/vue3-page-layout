@@ -10,7 +10,7 @@
                                 <el-text line-clamp="1"
                                     style="max-width: 120px;background-color: #f7f8fa;padding: 0 8px;height:100%;box-sizing:  border-box;"
                                     v-if="item.label">
-                                    {{ $t(item.label) }}
+                                    {{isUseLang.value ? $t(item.label) : item.label}}
                                 </el-text>
                             </template>
                             <DynamicFormComp 
@@ -29,10 +29,10 @@
                         <!-- <CollectionCategory v-if="formCategory" :form="form" /> -->
                     </div>
                     <div class="btn-group">
-                        <el-button @click="reset" v-if="showRest && !isMore" style="width: 72px;">重置</el-button>
+                        <el-button @click="reset" v-if="showRest && !isMore" style="width: 72px;">{{Lang.reset}}</el-button>
                         <el-button @click="submit" type="primary" style="margin:0">
-                            <SearchQuery></SearchQuery> 
-                            查询
+                            <SvgIcon name="search" style="padding-right: 2px;"></SvgIcon> 
+                            {{Lang.search}}
                         </el-button>
                         <el-button @click="btn.click" v-bind="btn.props || {}" v-for="(btn, index) in actions"
                             :type="btn.type" :key="index">{{ btn.name
@@ -42,8 +42,8 @@
             </div>
         </div>
         <div class="status" @click="expand" v-if="isMore">
-            <span style="color: #1447ff;" @click.stop="reset(1)">重置</span>
-            <span>{{ isOPen ? '收起' : '展开' }}<el-icon :class="{ up: !isOPen }">
+            <span style="color: #1447ff;" @click.stop="reset(1)">{{Lang.reset}}</span>
+            <span>{{ isOPen ? Lang.collapse : Lang.expand }}<el-icon :class="{ up: !isOPen }">
                     <DArrowRight />
                 </el-icon></span>
         </div>
@@ -52,9 +52,10 @@
 <script setup>
 import { ref, computed, reactive, watch, toRaw, onMounted, onUnmounted, watchEffect,nextTick } from 'vue'
 import DynamicFormComp from './DynamicFormComp.vue'
-import SearchQuery from '@/assets/search-icon.svg'
-// import CollectionCategory from './CollectionCategory.vue'
 import { DArrowRight } from '@element-plus/icons-vue'
+import useLangConfig from '../composables/useLangConfig.js'
+import SvgIcon from '../SvgIcon/index.vue'
+const { Lang, isUseLang } = useLangConfig()
 const props = defineProps({
     // 绑定值
     config: {
@@ -62,13 +63,11 @@ const props = defineProps({
         default: () => ({})
     }
 })
-// const SearchQueryIcon = ref(SearchQuery)
 const emit = defineEmits(['submit'])
 const formRef = ref(null)
 const formItems = computed(() => props.config.formItems)
 const actions = computed(() => props.config.actions)
 const showRest = computed(() => props.config.showRest)
-// const formCategory = computed(() => props.config.formCategory)
 const form = reactive({})
 const leftRef = ref(null)
 const isMore = ref(true)
@@ -224,8 +223,9 @@ defineExpose({
 
         .btn-group {
             padding-left: 10px;
-            width: 166px;
+            width: 192px;
             display: flex;
+            box-sizing: border-box;
             justify-content: end;
             gap: 10px;
             :deep(.el-button) {

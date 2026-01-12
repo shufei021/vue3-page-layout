@@ -21,8 +21,8 @@
                 </el-icon>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item command="all" v-if="selectionConfig.type === 'cur'">选中全部</el-dropdown-item>
-                    <el-dropdown-item command="cancel" v-else>取消全选</el-dropdown-item>
+                    <el-dropdown-item command="all" v-if="selectionConfig.type === 'cur'">{{Lang.selectAll}}</el-dropdown-item>
+                    <el-dropdown-item command="cancel" v-else>{{Lang.clearAll}}</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -67,16 +67,18 @@
       <!-- 空数据 -->
       <template #empty>
         <slot name="empty">
-          <div class="empty-text"><el-empty description="暂无数据" /></div>
+          <div class="empty-text"><el-empty :description="Lang.noData" /></div>
         </slot>
       </template>
 
     </el-table>
     <div class="footer" v-if="Table.config.page">
       <div class="hd" v-if="Table.config.selection && selectNum">
-        <el-button type="primary" link @click="cancel" v-if="isCurHasSelected">取消</el-button>
+        <el-button type="primary" link @click="cancel" v-if="isCurHasSelected">{{Lang.cancel}}</el-button>
         <span class="line" v-if="isCurHasSelected"></span>
-        <el-checkbox v-model="isCancelChecked">已选 {{ selectNum }}条</el-checkbox>
+        <el-checkbox v-model="isCancelChecked">
+           {{ transform(Lang.PRIVATE_INFO.total, {count:selectNum})}}
+        </el-checkbox>
         <span class="line"></span>
         <div class="batch-options-list-btn" ref="containerRef">
           <!-- 所有按钮先渲染在“测量区”（隐藏） -->
@@ -101,7 +103,7 @@
 
           <el-dropdown v-if="hiddenButtons.length" @command="(btn) => btn.click(btn)">
             <el-button link>
-              更多<el-icon class="el-icon--right"><arrow-down /></el-icon>
+              {{ Lang.more }}<el-icon class="el-icon--right"><arrow-down /></el-icon>
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
@@ -117,7 +119,7 @@
       </div>
       <div class="bt">
         <div class="select-info">
-          总 {{ Page.props.total }} 条, 每页显示 {{ Page.props.pageSize }} 条
+          {{ transform(Lang.PRIVATE_INFO.page, {total: Page.props.total, pageSize: Page.props.pageSize})}}
         </div>
         <el-pagination v-bind="{ ...$attrs, ...Page.props }" @size-change="handleSizeChange"
           @current-change="handleCurrentChange">
@@ -132,19 +134,23 @@
 <script setup>
 import { computed, ref, watch, onMounted, onUnmounted, nextTick, h, Fragment } from 'vue'
 import { ArrowDown } from '@element-plus/icons-vue'
-import useSelection from './composables/useSelection.js'
+import useSelection from '../composables/useSelection.js'
 import SvgcIcon from '../SvgIcon/index.vue'
 import { ElButton,ElImage, ElTag } from 'element-plus'
+import useLangConfig from '../composables/useLangConfig.js'
+import  useInstanceAttribute  from '../composables/useInstanceAttribute.js'
+const { Lang, transform,isUseLang } = useLangConfig()
+const t = useInstanceAttribute('$t')
 // 批量操作映射
 const actionMap = {
-  'undo': { name: '撤销', type: 'undo', click: (row) => { console.log('撤销', row) } },
-  'del': { name: '删除', type: 'del', click: (row) => { console.log('删除', row) } },
-  'enable': { name: '启用', type: 'enable', click: (row) => { console.log('启用', row) } },
-  'print': { name: '打印', type: 'print', click: (row) => { console.log('打印', row) } },
-  'review': { name: '审核', type: 'review', click: (row) => { console.log('审核', row) } },
-  'disable': { name: '禁用', type: 'disable', click: (row) => { console.log('禁用', row) } },
-  'pass': { name: '通过', click: (row) => { console.log('通过', row) } },
-  'reject': { name: '拒绝', click: (row) => { console.log('拒绝', row) } },
+  'undo': { name: Lang.value.cancelOrder, type: 'undo', click: (row) => { console.log('撤销', row) } },
+  'del': { name: Lang.value.delete, type: 'del', click: (row) => { console.log('删除', row) } },
+  'enable': { name: Lang.value.enable, type: 'enable', click: (row) => { console.log('启用', row) } },
+  'print': { name:  Lang.value.print, type: 'print', click: (row) => { console.log('打印', row) } },
+  'review': { name: Lang.value.review, type: 'review', click: (row) => { console.log('审核', row) } },
+  'disable': { name: Lang.value.disable, type: 'disable', click: (row) => { console.log('禁用', row) } },
+  'pass': { name: Lang.value.approve, click: (row) => { console.log('通过', row) } },
+  'reject': { name: Lang.value.reject, click: (row) => { console.log('拒绝', row) } },
 }
 
 const actionInfo = {
@@ -202,6 +208,9 @@ const Table = computed(() => {
       // 没有就初始化一个
       if(!column.slots){
         column.slots ={}
+      }
+      if(isUseLang.value){
+        column.label = t(column.label)
       }
       if (column.prop === 'action') {
         column.slots.default = (row) => {
@@ -267,7 +276,6 @@ const Table = computed(() => {
         }
       }
     })
-    console.log('%c [ columns ]-286', 'font-size:13px; background:pink; color:#bf2c9f;', columns)
   }
   return {
     props: {
@@ -313,7 +321,7 @@ const Page = computed(() => {
 
 // 批量操作按钮
 const batchBtns = computed(() => {
-  return Table.value.config.batchBtns.map(item => {
+  return (Table.value?.config?.batchBtns || []).map(item => {
     return {
       ...actionMap[item.type],
       ...item
@@ -605,6 +613,6 @@ defineExpose({
 }
 
 :deep(.el-table .el-table__header-wrapper th) {
-  background-color: #f8f8f9 !important;
+  background-color: #F6F8FC !important;
 }
 </style>

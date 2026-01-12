@@ -1,18 +1,23 @@
 <template>
     <div class="page-header">
         <div class="page-left">
-             <el-breadcrumb :separator-icon="ArrowRight">
-                <el-breadcrumb-item :to="{ ...(item.to || {} ) }" v-for="item in left" :key="item.name">{{ item.name }}</el-breadcrumb-item>
+             <el-breadcrumb separator="/" class="breadcrumb">
+                <el-breadcrumb-item :to="{ ...(item.to || {} ) }" v-for="item in left" :key="item.name">{{ isUseLang ? $t(item.name) : item.name }}</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="page-right">
-            <el-button v-bind="{...$attrs, ...(btn.props || {})}" v-for="btn in right" :key="btn.name" @click="btn.click">{{ btn.name }}</el-button>
+            <el-button v-bind="{...$attrs, ...(btn.props || {})}" v-for="btn in right" :key="btn.name" @click="btn.click">
+                <SvgIcon v-if="btn.icon" :name="btn.icon" style="padding-right: 2px;"></SvgIcon>
+                {{ isUseLang ? $t(btn.name):btn.name }}
+            </el-button>
         </div>
     </div>
 </template>
 <script setup>
 import { computed } from 'vue';
-import { ArrowRight } from '@element-plus/icons-vue'
+import useLangConfig from '../composables/useLangConfig.js'
+import  SvgIcon from '../SvgIcon/index.vue'
+const { isUseLang } = useLangConfig()
 defineOptions({
     name: 'PageHeader'
 })
@@ -40,7 +45,9 @@ const right = computed(() => {
 </script>
 <style scoped>
 .page-header {
+    height: 50px;
     display: flex;
+    box-sizing: border-box;
     justify-content: space-between;
     align-items: center;
     padding: 6px 10px;
@@ -52,5 +59,9 @@ const right = computed(() => {
     font-size: 18px;
     font-weight: 600;
     color: #262626;
+}
+.breadcrumb {
+    display: flex;
+    align-items: center;
 }
 </style>

@@ -254,7 +254,7 @@ const config = {
                 batchBtns: [
                     {
                         type: 'undo',
-                        name: '取消订单',
+                        // name: '取消订单',
                         click: (row) => {
                             console.log('%c [ click ]-77', 'font-size:13px; background:pink; color:#bf2c9f;', row)
                         }
