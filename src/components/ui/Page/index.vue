@@ -32,6 +32,9 @@ const submit = () => {
   rableRef.value.handleCommand('cancel');
   rableRef.value.handleCurrentChange(1);
 };
+defineExpose({
+  updateList: () => rableRef.value.updateList(),
+})
 </script>
 <style scoped>
 .page {

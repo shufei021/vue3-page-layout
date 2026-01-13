@@ -73,7 +73,7 @@ const langSet = (app) => {
     noData: {
       cn: "暂无数据",
       en: "No Data",
-      origin: "common.noData",
+      origin: "group.noData",
     },
     selectAll: {
       cn: "选中全部",

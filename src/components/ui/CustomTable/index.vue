@@ -117,7 +117,7 @@
 
         </div>
       </div>
-      <div class="bt">
+      <div class="bt" v-if="Table.config.page">
         <div class="select-info">
           {{ transform(Lang.PRIVATE_INFO.page, {total: Page.props.total, pageSize: Page.props.pageSize})}}
         </div>
@@ -197,7 +197,7 @@ const Table = computed(() => {
   }
   const defaultProps = {
     stripe: false, // 是否显示斑马纹
-    border: true, // 是否显示边框
+    border: false, // 是否显示边框
     height: '100%', // 表格高度
     rowKey: 'id', // 行键
   }
@@ -219,11 +219,19 @@ const Table = computed(() => {
               if (typeof btn.visible === 'function') {
                 if (!btn.visible(row)) return []
               }
+             const style = {
+                fontFamily: '"Switzer-Regular"',
+                fontWeight: 400,
+                fontSize: '14px',
+                color: '#0F62FE',
+              }
               return [h(ElButton, {
                 key: index,
+                link: true,
+                style,
                 ...(btn.props || {}),
                 disabled: btn.disable ? btn.disable(row) : false,
-                onClick: () => btn.click(row),
+                onClick: () => btn.click(row,btn),
               }, () => btn.name)]
             }
             ))
@@ -250,9 +258,7 @@ const Table = computed(() => {
       } else if(column.type === 'currency'){
         column.slots.default = (row) => {
           if (Object.keys(row).length){
-            if(column?.props?.style){
-              column.props.style = { marginRight:'2px',  width:  parseInt(column?.props?.style?.width || column?.props?.size || 12) + 'px',height:  parseInt(column?.props?.style?.height || column?.props?.size|| 12) + 'px',...column.props.style, }
-            }
+            column.props.style = { marginRight:'2px',  width:  parseInt(column?.props?.style?.width || column?.props?.size || 12) + 'px',height:  parseInt(column?.props?.style?.height || column?.props?.size|| 12) + 'px',...(column?.props?.style || {}) }
             return h(Fragment, {}, [
               h(column?.props?.currency ||  ArrowDown, {
                 ...(column.props || {}),
@@ -272,6 +278,24 @@ const Table = computed(() => {
                 ...(column.props || {}),
               },()=> renderDefaultCell(row,column))
             )
+          }
+        }
+      }else if(column.type === 'status'){
+        column.slots.default = (row) => {
+          if (Object.keys(row).length) {
+            column.props.style = { marginRight:'4px',   width:  parseInt(column?.props?.style?.width || column?.props?.size || 12) + 'px',height:  parseInt(column?.props?.style?.height || column?.props?.size|| 12) + 'px',...(column?.props?.style || {}) }
+            column.props.style.color = column?.props?.colorFormat?.(row) || column?.props?.color || '#ccc'
+            return h(Fragment, {},  [
+              h(SvgcIcon, {
+                name: 'dot',
+                ...(column.props || {}),
+              }),
+              h('span',{
+                style:{
+                  ...(column?.props?.textStyle || {}),
+                }
+              },renderDefaultCell(row,column))
+            ])
           }
         }
       }
@@ -472,8 +496,10 @@ const updateList = () => {
   }
   // 请求数据
   Table.value.config.api(prams).then(res => {
-    tableData.value = res.data || [];
-    defaultPageProps.value.total = res.total
+    if(res.success){
+      tableData.value = res.data || [];
+      defaultPageProps.value.total = res.total || 0;
+    }
   }).finally(() => {
     loading.value = false;
   })
@@ -487,17 +513,22 @@ const resize = () => {
   });
 }
 onMounted(() => {
-  window.addEventListener('resize', resize)
-  resize()
+  if(Table.value.config.selection){
+    window.addEventListener('resize', resize)
+    resize()
+  }
 })
 onUnmounted(() => {
-  window.removeEventListener('resize', resize)
+  if(Table.value.config.selection){
+    window.removeEventListener('resize', resize)
+  }
 })
 defineExpose({
   tableRef,
   handleCommand,
   handleCurrentChange,
-  selectionConfig
+  selectionConfig,
+  updateList
 })
 </script>
 
