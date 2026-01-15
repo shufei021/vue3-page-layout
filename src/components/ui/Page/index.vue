@@ -1,6 +1,10 @@
 <template>
     <div class="page">
-        <Header v-if="headerConfig" :config="headerConfig"></Header>
+        <Header v-if="headerConfig" :config="headerConfig">
+          <template #header-left>
+            <slot name="header-left"></slot>
+          </template>
+        </Header>
         <SearchForm v-if="formConfig" :config="formConfig" @submit="submit"></SearchForm>
         <CustomTable v-if="tableConfig" ref="rableRef" :config="tableConfig"></CustomTable>
         <slot name="dialog"></slot>
@@ -33,7 +37,10 @@ const submit = () => {
   rableRef.value.handleCurrentChange(1);
 };
 defineExpose({
+  handleCommand:(name)=> rableRef.value.handleCommand(name),
   updateList: () => rableRef.value.updateList(),
+  selectionConfig: () => rableRef.value.selectionConfig,
+  tableData: () => rableRef.value.tableData,
 })
 </script>
 <style scoped>

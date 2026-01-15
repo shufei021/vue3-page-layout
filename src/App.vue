@@ -183,9 +183,9 @@ const config = {
                         prop: 'status',
                         label: '订单状态',
                         slots:{
-                            default: (row, h) => {
-                                return h(ElTag, { type: 'primary' }, row.status)
-                            },
+                            // default: (row, h) => {
+                            //     return h(ElTag, { type: 'primary' }, row.status)
+                            // },
                             header: (column,h)=>{ 
                                  return h(ElButton, { type: 'primary', onClick: () => console.log('click') }, '编辑')
                             }

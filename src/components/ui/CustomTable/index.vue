@@ -15,7 +15,7 @@
               <el-checkbox :model-value="isCurAllSelected" @change="toggleAllSelection" :indeterminate="isIndeterminate"
                 style="margin-right: 4px" />
               <!-- 下拉菜单仅由箭头触发 -->
-              <el-dropdown trigger="click" @command="handleCommand">
+              <el-dropdown trigger="click" @command="handleCommand" v-if="Table.config.isShowSelectAll">
                 <el-icon style="cursor: pointer; position: absolute;transform: translate(-2px, -8px);">
                   <arrow-down />
                 </el-icon>
@@ -70,11 +70,11 @@
           <div class="empty-text"><el-empty :description="Lang.noData" /></div>
         </slot>
       </template>
-
     </el-table>
-    <div class="footer" v-if="Table.config.page">
+
+    <div class="footer" v-if="Table.config.selection ||  Table.config.page">
       <div class="hd" v-if="Table.config.selection && selectNum">
-        <el-button type="primary" link @click="cancel" v-if="isCurHasSelected">{{Lang.cancel}}</el-button>
+        <el-button style="background-color: #fff!important;color:#0052d9!important" type="primary" link @click="cancel" v-if="isCurHasSelected">{{Lang.cancel}}</el-button>
         <span class="line" v-if="isCurHasSelected"></span>
         <el-checkbox v-model="isCancelChecked">
            {{ transform(Lang.PRIVATE_INFO.total, {count:selectNum})}}
@@ -96,7 +96,7 @@
           <a class="select-btn" v-for="(btn, index) in visibleButtons" :key="index" @click="btn.click(btn)"
             :style="{ minWidth: btn.width }">
             <div class="icon-font-wrap">
-              <SvgcIcon :name="btn.type" style="margin-right: 5px;"></SvgcIcon>
+              <SvgcIcon :name="btn.type" style="margin-right: 5px;" :style="btn.style || {}"></SvgcIcon>
             </div>
             <span class="select-text">{{ btn.name }}</span>
           </a>
@@ -114,14 +114,13 @@
               </el-dropdown-menu>
             </template>
           </el-dropdown>
-
         </div>
       </div>
       <div class="bt" v-if="Table.config.page">
         <div class="select-info">
           {{ transform(Lang.PRIVATE_INFO.page, {total: Page.props.total, pageSize: Page.props.pageSize})}}
         </div>
-        <el-pagination v-bind="{ ...$attrs, ...Page.props }" @size-change="handleSizeChange"
+        <el-pagination  v-bind="{ ...$attrs, ...Page.props }" @size-change="handleSizeChange"
           @current-change="handleCurrentChange">
           <!-- 自定义插槽，可扩展额外内容 -->
           <slot />
@@ -141,6 +140,7 @@ import useLangConfig from '../composables/useLangConfig.js'
 import  useInstanceAttribute  from '../composables/useInstanceAttribute.js'
 const { Lang, transform,isUseLang } = useLangConfig()
 const t = useInstanceAttribute('$t')
+const router = useRouter()
 // 批量操作映射
 const actionMap = {
   'undo': { name: Lang.value.cancelOrder, type: 'undo', click: (row) => { console.log('撤销', row) } },
@@ -223,7 +223,10 @@ const Table = computed(() => {
                 fontFamily: '"Switzer-Regular"',
                 fontWeight: 400,
                 fontSize: '14px',
-                color: '#0F62FE',
+                color: '#0F62FE!important',
+                minWidth: 'auto!important',
+                borderRadius: '8px!important',
+                backgroundColor: 'transparent!important',
               }
               return [h(ElButton, {
                 key: index,
@@ -231,7 +234,7 @@ const Table = computed(() => {
                 style,
                 ...(btn.props || {}),
                 disabled: btn.disable ? btn.disable(row) : false,
-                onClick: () => btn.click(row,btn),
+                onClick: () => btn.click(row,router),
               }, () => btn.name)]
             }
             ))
@@ -316,8 +319,8 @@ const Table = computed(() => {
 const defaultPageProps = ref({
   total: 0,
   currentPage: 1,
-  pageSize: 5,
-  pageSizes: [5, 100],
+  pageSize: 50,
+  pageSizes: [50, 100,200],
   background: true,
   layout: 'prev, pager, next, sizes'
 })
@@ -476,11 +479,12 @@ const handleCurrentChange = (val) => {
   updateList();
 }
 
-const updateList = () => {
+const updateList = async () => {
+  await (Table.value?.config?.preFunc || ((() => Promise.resolve)))()
   loading.value = true;
   // 分页参数
   const pagePareams = {
-    [Page.value.config.alias.pageNum]: defaultPageProps.value.currentPage,
+    [Page.value.config.alias.pageNum]: defaultPageProps.value.currentPage - 1,
     [Page.value.config.alias.pageSize]: defaultPageProps.value.pageSize,
   }
   // 额外参数
@@ -528,7 +532,8 @@ defineExpose({
   handleCommand,
   handleCurrentChange,
   selectionConfig,
-  updateList
+  updateList,
+  tableData,
 })
 </script>
 
@@ -645,5 +650,8 @@ defineExpose({
 
 :deep(.el-table .el-table__header-wrapper th) {
   background-color: #F6F8FC !important;
+}
+:deep(.el-button:hover){
+  background-color: transparent!important;
 }
 </style>

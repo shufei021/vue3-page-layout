@@ -35,6 +35,11 @@ const langSet = (app) => {
       en: "Cancel",
       origin: "common.cancel",
     },
+    detail: {
+      cn: "取消",
+      en: "Cancel",
+      origin: "common.detail",
+    },
     confirm: {
       cn: "确定",
       en: "Confirm",
