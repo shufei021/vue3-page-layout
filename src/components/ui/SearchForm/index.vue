@@ -28,7 +28,7 @@
                         </el-form-item>
                         <!-- <CollectionCategory v-if="formCategory" :form="form" /> -->
                     </div>
-                    <div class="btn-group">
+                    <div class="btn-group" :class="{noReset: !showRest }">
                         <el-button @click="reset" v-if="showRest && !isMore" style="width: 72px;">{{Lang.reset}}</el-button>
                         <el-button @click="submit" type="primary" style="margin:0">
                             <SvgIcon name="search" style="padding-right: 2px;"></SvgIcon> 
@@ -237,6 +237,9 @@ defineExpose({
                 line-height: 32px;
                 border-radius: 4px !important;
             }
+        }
+        .noReset{
+            width: 105px;
         }
     }
 

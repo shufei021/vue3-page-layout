@@ -2,14 +2,15 @@
     <div class="tabs-box">
         <div v-for="(item, tindex) in tabs" :key="tindex" :class="{ active: active === tindex }"
             @click="changeTab(tindex, item)">
-            {{ $t(item.title) }} <span v-if="isCount">( {{ item.num || 0 }} )</span>
+            {{ isUseLang ? $t(item.name) : item.name }} <span v-if="isCount">( {{ item.num || 0 }} )</span>
         </div>
     </div>
 </template>
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-
+import useLangConfig from '../composables/useLangConfig.js'
+const { isUseLang } = useLangConfig()
 defineOptions({
     name: 'Tab',
 })
@@ -39,12 +40,12 @@ const changeTab = (index, item) => {
     border-bottom: 1px solid #E7E7E7;
     margin: 0 10px;
     box-sizing: border-box;
-
+    margin-bottom: 16px;
     &>div {
         flex: 0 0 auto;
         height: 48px;
         padding: 0 16px;
-        font-family: @regular-family;
+        // font-family: @regular-family;
         font-weight: 400;
         font-size: 14px;
         color: rgba(26, 26, 26, 0.5);
@@ -54,8 +55,8 @@ const changeTab = (index, item) => {
     }
 
     &>div.active {
-        color: @active-color;
-        border-bottom: 3px solid @active-color;
+        color: #0052D9;
+        border-bottom: 3px solid#0052D9;
     }
 }
 </style>

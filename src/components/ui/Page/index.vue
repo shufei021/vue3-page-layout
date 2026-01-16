@@ -1,11 +1,15 @@
 <template>
+  <!-- 表格页面完整模板 -->
     <div class="page">
+      <!-- 头部: 左侧面包屑或则自定义或则不显示、右侧操作按钮群组 -->
         <Header v-if="headerConfig" :config="headerConfig">
           <template #header-left>
             <slot name="header-left"></slot>
           </template>
         </Header>
+        <!-- 搜索表单 -->
         <SearchForm v-if="formConfig" :config="formConfig" @submit="submit"></SearchForm>
+        <!-- 表格 -->
         <CustomTable v-if="tableConfig" ref="rableRef" :config="tableConfig"></CustomTable>
         <slot name="dialog"></slot>
     </div>

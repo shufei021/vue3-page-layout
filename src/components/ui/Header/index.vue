@@ -19,6 +19,7 @@
 import { computed } from 'vue';
 import useLangConfig from '../composables/useLangConfig.js'
 import  SvgIcon from '../SvgIcon/index.vue'
+import { useRouter } from 'vue-router'
 const { isUseLang } = useLangConfig()
 const router = useRouter()
 defineOptions({

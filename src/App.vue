@@ -2,8 +2,8 @@
     <Page :config="config"></Page>
 </template>
 <script setup>
-import {Page} from "@/components/ui"
-import { ElButton,ElTag } from "element-plus";
+import { Page } from "@/components/ui"
+import { ElButton, ElTag } from "element-plus";
 
 // import { Location } from '@element-plus/icons-vue'
 const api = (page) => {
@@ -21,134 +21,136 @@ const api = (page) => {
                     "deliveryCompanyName": "string",
                     "trackingNo": "string",
                     "customerId": 12,
-                    url:'https://gips3.baidu.com/it/u=3935430539,3622545779&fm=3074&app=3074&f=PNG?w=2048&h=2048',
-                    "status":  i % 2 ? '0' : 3
+                    url: 'https://gips3.baidu.com/it/u=3935430539,3622545779&fm=3074&app=3074&f=PNG?w=2048&h=2048',
+                    "status": i % 2 ? '0' : 3
                 }
             })
             resolve({
                 "success": true,
                 "code": 200,
                 "message": "提示",
-                "data":data,
+                "data": data,
                 "total": 100,
-                "curPage":1,
+                "curPage": 1,
                 "size": 10
             })
-        },100)
+        }, 100)
     })
 }
 
 const config = {
-    header:{
-        path:['订单管理','订单列表'],
-        buttons:[
-            {type:'primary',name:'新增',click:()=>{
-                console.log('%c [  ]-47', 'font-size:13px; background:pink; color:#bf2c9f;')
-            }},
-            {type:'primary',name:'导出'},
-            {type:'primary',name:'打印'}
+    header: {
+        path: ['订单管理', '订单列表'],
+        buttons: [
+            {
+                type: 'primary', name: '新增', click: () => {
+                    console.log('%c [  ]-47', 'font-size:13px; background:pink; color:#bf2c9f;')
+                }
+            },
+            { type: 'primary', name: '导出' },
+            { type: 'primary', name: '打印' }
         ]
     },
-    form:{
-        showRest: true,
-         formItems: [
-        {
-            prop: 'keyword',
-            compType: 'ElInput',
-            label: '关键字',
-            span: 1,
-            compProps: {
-                placeholder: '请输入',
+    form: {
+        showRest: false,
+        formItems: [
+            {
+                prop: 'keyword',
+                compType: 'ElInput',
+                label: '关键字',
+                span: 1,
+                compProps: {
+                    placeholder: '请输入',
+                },
+                modelEvent: 'input'
             },
-            modelEvent: 'input'
-        },
-        {
-            prop: 'dateMap',
-            compType: 'ElDatePicker',
-            label: '日期',
-            compProps: {
-                type: 'monthrange',
-                format: "YYYY-MM",
-                unlinkPanels: true,
-                valueFormat: "YYYY-MM-DD",
+            {
+                prop: 'dateMap',
+                compType: 'ElDatePicker',
+                label: '日期',
+                compProps: {
+                    type: 'monthrange',
+                    format: "YYYY-MM",
+                    unlinkPanels: true,
+                    valueFormat: "YYYY-MM-DD",
+                },
+                modelEvent: 'input'
             },
-            modelEvent: 'input'
-        },
-        {
-            prop: 'size',
-            compType: 'ElInput',
-            defaultValue: 40,
-            label: '数字输入框',
-            compProps: {
-                placeholder: '数字',
-                type: 'number',
-            },
-            modelEvent: 'input',
-            events: {
-                onBlur: (val) => {
-                    if (val.target.value <= 0) {
-                        console.log('%c [  ]-47', 'font-size:13px; background:pink; color:#bf2c9f;', val)
-                        //    searchForm.value.form.size = 40;
+            {
+                prop: 'size',
+                compType: 'ElInput',
+                defaultValue: 40,
+                label: '数字输入框',
+                compProps: {
+                    placeholder: '数字',
+                    type: 'number',
+                },
+                modelEvent: 'input',
+                events: {
+                    onBlur: (val) => {
+                        if (val.target.value <= 0) {
+                            console.log('%c [  ]-47', 'font-size:13px; background:pink; color:#bf2c9f;', val)
+                            //    searchForm.value.form.size = 40;
+                        }
                     }
                 }
-            }
-        },
-        {
-            prop: 'status',
-            compType: 'ElSelect',
-            label: '下拉单选',
-            defaultValue: '1',
-            compProps: {
-                placeholder: '请选择',
-                clearable: true,
-                options: [
-                    {
-                        label: '类型1',
-                        value: '1'
-                    },
-                    {
-                        label: '类型2',
-                        value: '2'
-                    },
-                ],
             },
-            modelEvent: 'change'
-        },
-        {
-            prop: 'status',
-            compType: 'ElSelect',
-            label: '下拉多选',
-            defaultValue: 'COMPLETED',
-            compProps: {
-                placeholder: '请选择',
-                clearable: true,
-                multiple: true,
-                collapseTags: true,
-                collapseTagsTooltip: true,
-                options: [
-                    {
-                        label: '类型1',
-                        value: '1'
-                    },
-                    {
-                        label: '类型2',
-                        value: '2'
-                    },
-                    {
-                        label: '类型3',
-                        value: '3'
-                    },
-                    {
-                        label: '类型4',
-                        value: '4'
-                    },
-                ],
+            {
+                prop: 'status',
+                compType: 'ElSelect',
+                label: '下拉单选',
+                defaultValue: '1',
+                compProps: {
+                    placeholder: '请选择',
+                    clearable: true,
+                    options: [
+                        {
+                            label: '类型1',
+                            value: '1'
+                        },
+                        {
+                            label: '类型2',
+                            value: '2'
+                        },
+                    ],
+                },
+                modelEvent: 'change'
             },
-            modelEvent: 'change'
-        },
-    ]
+            {
+                prop: 'status',
+                compType: 'ElSelect',
+                label: '下拉多选',
+                defaultValue: 'COMPLETED',
+                compProps: {
+                    placeholder: '请选择',
+                    clearable: true,
+                    multiple: true,
+                    collapseTags: true,
+                    collapseTagsTooltip: true,
+                    options: [
+                        {
+                            label: '类型1',
+                            value: '1'
+                        },
+                        {
+                            label: '类型2',
+                            value: '2'
+                        },
+                        {
+                            label: '类型3',
+                            value: '3'
+                        },
+                        {
+                            label: '类型4',
+                            value: '4'
+                        },
+                    ],
+                },
+                modelEvent: 'change'
+            },
+        ]
     },
-    table:{
+    table: {
         table: {
             config: {
                 selection: true,
@@ -156,12 +158,12 @@ const config = {
                     {
                         prop: 'id',
                         label: '订单编号',
-                        slots:{
+                        slots: {
                             default: (row, h) => {
-                                return h('div', {}, 'AAAA')
+                                return h('div', {}, row.id)
                             },
-                            header: (column,h)=>{ 
-                                return h('div', {}, 'AAAA')
+                            header: (column, h) => {
+                                return h('div', {}, '自定义表头')
                             }
                         }
                     },
@@ -169,25 +171,25 @@ const config = {
                         prop: 'totalAmount',
                         label: '订单金额',
                         type: 'currency',
-                        props:{
-                            style:{
-                                color: 'green',
+                        props: {
+                            style: {
+                                // color: 'green',
                             },
-                            textStyle:{
-                                 color: 'blue',
+                            textStyle: {
+                                color: 'blue',
                             }
                         }
                     },
-    
+
                     {
                         prop: 'status',
                         label: '订单状态',
-                        slots:{
+                        slots: {
                             // default: (row, h) => {
                             //     return h(ElTag, { type: 'primary' }, row.status)
                             // },
-                            header: (column,h)=>{ 
-                                 return h(ElButton, { type: 'primary', onClick: () => console.log('click') }, '编辑')
+                            header: (column, h) => {
+                                return h(ElButton, { type: 'primary', onClick: () => console.log('click') }, '编辑')
                             }
                         }
                     },
@@ -211,16 +213,16 @@ const config = {
                     {
                         prop: 'action',
                         label: '操作',
-                        width:300
+                        width: 300
                     }
                 ],
                 actionBtns: [
                     {
                         name: '详情',
-                        visible:(row)=>{
-                            return row.id %2 === 0
+                        visible: (row) => {
+                            return row.id % 2 === 0
                         },
-                        props:{
+                        props: {
                             // link:true,
                             type: 'success',
                             size: 'small',
@@ -232,8 +234,8 @@ const config = {
                     {
                         name: '编辑',
                         type: 'success',
-                        visible:(row)=>{
-                            return  row.id %2 === 1
+                        visible: (row) => {
+                            return row.id % 2 === 1
                         },
                         click: (row) => {
                             console.log('%c [ click ]-77', 'font-size:13px; background:pink; color:#bf2c9f;', row)
@@ -241,8 +243,8 @@ const config = {
                     },
                     {
                         name: '开启',
-                        disable: (row)=>{
-                            return row.id %2 === 0
+                        disable: (row) => {
+                            return row.id % 2 === 0
                         },
                         type: 'primary',
                         click: (row) => {
@@ -300,11 +302,73 @@ const config = {
                             console.log('%c [ click ]-77', 'font-size:13px; background:pink; color:#bf2c9f;', row)
                         }
                     },
-               
+
                 ],
                 api,
                 index: true,
-                page:true
+                page: true,
+                tab: {
+                    isCount: true,
+                    tabApi: ()=>{
+                        return new Promise((resolve, reject) => {
+                            resolve({
+                            "success": true,
+                            "code": 200,
+                            "data": {
+                                "ALL": 5,
+                                "CANCELLED": 0,
+                                "COMPLETED": 3,
+                                "CREATED": 0,
+                                "PAID": 2
+                            }
+                            })
+                        })
+                    },
+
+                    tabs: [
+                        {
+                            name: 'order.all',
+                            value: 'ALL',
+                            num: 0
+                        },
+                        {
+                            name: 'prePaid.tabToPay',
+                            value: 'CREATED',
+                            num: 0,
+                            code: 10,
+                        },
+                        {
+                            name: 'prePaid.tabPaid',
+                            value: 'PAID',
+                            num: 0,
+                            code: 20,
+                        },
+                        {
+                            name: 'prePaid.tabCompleted',
+                            value: 'COMPLETED',
+                            num: 0,
+                            code: 30,
+                        },
+                        {
+                            name: 'prePaid.tabCancelled',
+                            value: 'CANCELLED',
+                            num: 0,
+                            code: 30,
+                        }
+                    ],
+                    transformPram: ({ pageCommon }) => {
+                        return {
+                            prepaidId: pageCommon?.form?.prepaidId || '',
+                            prepaidTypeCode: pageCommon?.form?.prepaidType || 0,
+                        }
+                    },
+                    onChange: ({ item, pageCommon, updateList }) => {
+                        updateList({
+                            prepaidStatus: item.code,
+                            prepaidId: pageCommon?.form?.prepaidId || '',
+                        })
+                    }
+                }
             }
         }
     }

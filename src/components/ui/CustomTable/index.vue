@@ -1,5 +1,6 @@
 <template>
   <div class="custom-table" v-loading="loading">
+    <Tab v-if="tabLoad && Table.config.tab && Table.config.tab.tabs.length" :tabs="Table.config.tab.tabs"></Tab>
     <el-table ref="tableRef" v-bind="{ ...$attrs, ...Table.props }" v-loading="loading" :data="tableData" size="small"
       @sort-change="handleSortChange">
       <!-- 序号列 -->
@@ -132,14 +133,17 @@
 
 <script setup>
 import { computed, ref, watch, onMounted, onUnmounted, nextTick, h, Fragment } from 'vue'
-import { ArrowDown } from '@element-plus/icons-vue'
-import useSelection from '../composables/useSelection.js'
-import SvgcIcon from '../SvgIcon/index.vue'
 import { ElButton,ElImage, ElTag } from 'element-plus'
+import { useRouter } from 'vue-router'
+import SvgcIcon from '../SvgIcon/index.vue'
+import useTab from '../composables/useTab.js'
+import useSelection from '../composables/useSelection.js'
 import useLangConfig from '../composables/useLangConfig.js'
-import  useInstanceAttribute  from '../composables/useInstanceAttribute.js'
-const { Lang, transform,isUseLang } = useLangConfig()
+import useInstanceAttribute  from '../composables/useInstanceAttribute.js'
+import Tab from '../Tab/index.vue'
+const { Lang, transform, isUseLang } = useLangConfig()
 const t = useInstanceAttribute('$t')
+
 const router = useRouter()
 // 批量操作映射
 const actionMap = {
@@ -261,9 +265,10 @@ const Table = computed(() => {
       } else if(column.type === 'currency'){
         column.slots.default = (row) => {
           if (Object.keys(row).length){
-            column.props.style = { marginRight:'2px',  width:  parseInt(column?.props?.style?.width || column?.props?.size || 12) + 'px',height:  parseInt(column?.props?.style?.height || column?.props?.size|| 12) + 'px',...(column?.props?.style || {}) }
+            column.props.style = { marginRight:'2px',  width:  parseInt(column?.props?.style?.width || column?.props?.size || 12) + 'px',height:  parseInt(column?.props?.style?.height || column?.props?.size|| 12) + 'px',color:'#1A1A1Aed',...(column?.props?.style || {}) }
             return h(Fragment, {}, [
-              h(column?.props?.currency ||  ArrowDown, {
+              h(column?.props?.currency ||  SvgcIcon, {
+                name: 'currency',
                 ...(column.props || {}),
               }),
               h('span',{
@@ -363,7 +368,7 @@ const buttonRefs = ref([]);
 const hiddenButtons = ref([]); // 其余隐藏
 const visibleButtons = ref([]);
 
-
+const { tabLoad,initTabs } = useTab(Table,props)
 let timer = null
 // 计算哪些按钮可见
 const calculateVisibleButtons = () => {
@@ -520,6 +525,9 @@ onMounted(() => {
   if(Table.value.config.selection){
     window.addEventListener('resize', resize)
     resize()
+  }
+  if(Table.value.config.tab){
+    initTabs()
   }
 })
 onUnmounted(() => {
