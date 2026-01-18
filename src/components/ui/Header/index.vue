@@ -29,6 +29,10 @@ const props = defineProps({
     config: {
         type: Object,
         default: () => ({})
+    },
+    pageState: {
+        type: Object,
+        default: () => ({})
     }
 })
 

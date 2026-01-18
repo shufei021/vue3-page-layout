@@ -2,7 +2,6 @@ import { watch,ref } from "vue";
 export default function useTab(Table,props) {
   // tab 配置
   const tabConfig = Table.value?.config?.tab || {};
-  console.log('%c [ tabConfig ]-5', 'font-size:13px; background:pink; color:#bf2c9f;', tabConfig)
   // 当前高亮索引
   const active = ref(tabConfig.active || 0);
   // tab 数据（对象形式）

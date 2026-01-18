@@ -2,7 +2,7 @@
   <!-- 表格页面完整模板 -->
     <div class="page">
       <!-- 头部: 左侧面包屑或则自定义或则不显示、右侧操作按钮群组 -->
-        <Header v-if="headerConfig" :config="headerConfig" ref="headerRef">
+        <Header v-if="headerConfig" :config="headerConfig" ref="headerRef" :pageState="pageState">
           <template #header-left>
             <slot name="header-left"></slot>
           </template>
