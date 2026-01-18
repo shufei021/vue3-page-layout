@@ -13,7 +13,7 @@ export default function useTab(Table,props) {
   const initTabs = async (params = {}) => {
     const { tabs = [], tabApi: api, transformPram } = tabConfig;
     if (typeof transformPram === "function") {
-      params = transformPram({ params, pageCommon: props.pageCommon });
+      params = transformPram({ params, pageCommon: props.pageState  });
     }
     if (api) {
       const res = await api(params);
@@ -42,14 +42,14 @@ export default function useTab(Table,props) {
 //     tabLoad.value = true;
 //   });
   // tab 改变
-  const changeTab = (index, item) => {
+  const changeTab = ({index, item,updateList}) => {
     if (index === active.value) return
     active.value = index;
     tabConfig.onChange &&
     tabConfig.onChange({
         index,
         item,
-        pageCommon: props.pageCommon,
+        pageCommon: props.pageState,
         tabInit: initTabs,
         updateList,
     });

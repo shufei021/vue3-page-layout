@@ -28,7 +28,7 @@ const changeTab = (index, item) => {
         return;
     }
     active.value = index;
-    emit('change', item,index)
+    emit('change',{ item,index})
 }
 
 </script>

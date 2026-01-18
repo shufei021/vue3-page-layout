@@ -8,12 +8,13 @@ export default function useLang(){
     })
     const Lang = computed(() => {
         const langConfig = instance?.appContext.config.globalProperties.$uiLangConfig
+        const isNotLang = instance?.appContext.config.globalProperties?.$isNotLang
         return new Proxy(langConfig, {
             get(target, key) {
                 if(target[key].isPrivate){ // 私有字段
                     return target[key]
                 } else{
-                    return isUseLang.value ? instance.proxy.$t(target[key].origin) : target[key].en
+                    return isNotLang? target[key].cn : isUseLang.value ? instance.proxy.$t(target[key].origin) : target[key].en
                 }
             }
         })

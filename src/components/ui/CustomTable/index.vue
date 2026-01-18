@@ -1,6 +1,6 @@
 <template>
   <div class="custom-table" v-loading="loading">
-    <Tab v-if="tabLoad && Table.config.tab && Table.config.tab.tabs.length" :tabs="Table.config.tab.tabs"></Tab>
+    <Tab v-if="tabLoad && Table.config.tab && Table.config.tab.tabs.length" :tabs="Table.config.tab.tabs" @change="(obj)=>changeTab({...obj,updateList})"></Tab>
     <el-table ref="tableRef" v-bind="{ ...$attrs, ...Table.props }" v-loading="loading" :data="tableData" size="small"
       @sort-change="handleSortChange">
       <!-- 序号列 -->
@@ -135,6 +135,7 @@
 import { computed, ref, watch, onMounted, onUnmounted, nextTick, h, Fragment } from 'vue'
 import { ElButton,ElImage, ElTag } from 'element-plus'
 import { useRouter } from 'vue-router'
+import { ArrowDown } from '@element-plus/icons-vue'
 import SvgcIcon from '../SvgIcon/index.vue'
 import useTab from '../composables/useTab.js'
 import useSelection from '../composables/useSelection.js'
@@ -183,7 +184,11 @@ const props = defineProps({
         }
       }
     })
-  }
+  },
+  pageState: {
+    type: Object,
+    default: () => ({})
+  },
 })
 
 // 表格配置
@@ -239,7 +244,7 @@ const Table = computed(() => {
                 ...(btn.props || {}),
                 disabled: btn.disable ? btn.disable(row) : false,
                 onClick: () => btn.click(row,router),
-              }, () => btn.name)]
+              }, {default:() => btn.name})]
             }
             ))
           }
@@ -368,12 +373,15 @@ const buttonRefs = ref([]);
 const hiddenButtons = ref([]); // 其余隐藏
 const visibleButtons = ref([]);
 
-const { tabLoad,initTabs } = useTab(Table,props)
+const { tabLoad,initTabs,changeTab } = useTab(Table,props)
 let timer = null
 // 计算哪些按钮可见
 const calculateVisibleButtons = () => {
+   const selectNum = props.pageState?.table()?.selectionConfig?.selectNum || 0
+  if(!selectNum)return
   clearTimeout(timer)
   timer = setTimeout(() => {
+    console.log('%c [ 计算 ]-384', 'font-size:13px; background:pink; color:#bf2c9f;', )
     const container = containerRef.value;
     const measureArea = measureRef.value;
     const buttons = batchBtns.value;
@@ -409,7 +417,7 @@ const calculateVisibleButtons = () => {
 
     visibleButtons.value = buttons.slice(0, visibleCount);
     hiddenButtons.value = buttons.slice(visibleCount);
-  }, 300)
+  },300)
 };
 
 // 事件

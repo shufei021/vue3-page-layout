@@ -17,9 +17,9 @@
 </template>
 <script setup>
 import { computed } from 'vue';
-import useLangConfig from '../composables/useLangConfig.js'
-import  SvgIcon from '../SvgIcon/index.vue'
 import { useRouter } from 'vue-router'
+import SvgIcon from '../SvgIcon/index.vue'
+import useLangConfig from '../composables/useLangConfig.js'
 const { isUseLang } = useLangConfig()
 const router = useRouter()
 defineOptions({
@@ -33,7 +33,7 @@ const props = defineProps({
 })
 
 const left = computed(() => { 
-    return props.config.path.map(item => {
+    return (props.config?.path || []).map(item => {
         if(typeof item === 'string'){
             return {
                 name: item
@@ -44,7 +44,12 @@ const left = computed(() => {
     })
 })
 const right = computed(() => { 
-    return props.config.buttons || []
+    return props.config?.buttons || []
+})
+
+defineExpose({
+    left: ()=>left.value,
+    right: ()=>right.value
 })
 </script>
 <style scoped>

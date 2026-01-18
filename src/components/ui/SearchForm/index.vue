@@ -61,6 +61,10 @@ const props = defineProps({
     config: {
         type: Object,
         default: () => ({})
+    },
+    pageState:{
+        type: Object,
+        default: () => ({})
     }
 })
 const emit = defineEmits(['submit'])
@@ -70,12 +74,14 @@ const actions = computed(() => props.config.actions)
 const showRest = computed(() => props.config.showRest)
 const form = reactive({})
 const leftRef = ref(null)
-const isMore = ref(true)
+const isMore = ref(false)
 const isOPen = ref(false)
+const outerForm = ref({})
 watch(formItems, (newVal) => {
     newVal.forEach(item => {
         if (!(item.prop in form)) {
             form[item.prop] = item.defaultValue || ''
+            outerForm.value[item.prop] = item.defaultValue || ''
         }
     })
 }, { immediate: true })
@@ -89,9 +95,11 @@ const reset = () => {
     }, 300)
 }
 let timer = null
+
 const submit = () => {
     clearTimeout(timer)
     timer = setTimeout(() => {
+        outerForm.value = toRaw(form)
         emit('submit', toRaw(form))
         isOPen.value = false
     }, 300)
@@ -104,7 +112,6 @@ const resize = () => {
         const el = leftRef.value
         if (el) {
             const { offsetHeight } = el
-            console.log('%c [ offsetHeight ]-107', 'font-size:13px; background:pink; color:#bf2c9f;', offsetHeight)
             isMore.value = offsetHeight > 32
         }
     });
@@ -121,6 +128,7 @@ onUnmounted(() => {
 })
 defineExpose({
     form,
+    outerForm
 })
 </script>
 <style scoped lang="less">
@@ -223,7 +231,7 @@ defineExpose({
 
         .btn-group {
             padding-left: 10px;
-            width: 192px;
+            width: 170px;
             display: flex;
             box-sizing: border-box;
             justify-content: end;
@@ -239,7 +247,7 @@ defineExpose({
             }
         }
         .noReset{
-            width: 105px;
+            width: 88px;
         }
     }
 

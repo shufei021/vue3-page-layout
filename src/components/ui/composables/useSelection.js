@@ -1,4 +1,4 @@
-import { ref, reactive, watchEffect,computed } from "vue";
+import { ref, reactive, watchEffect,computed,watch } from "vue";
 
 export default function useSelection(Table, tableData,Page) {
   const props = Table.value.props;
@@ -11,6 +11,7 @@ export default function useSelection(Table, tableData,Page) {
     type: "cur", // all - 全部选中状态, cur - 当前页状态
     checkedList: [], // 当前页状态下选中列表
     uncheckedList: [], // 全选状态下的取消选择列表
+    selectNum: 0,
   });
 
   watchEffect(() => {
@@ -198,6 +199,9 @@ export default function useSelection(Table, tableData,Page) {
     } else{
       return  tableData.value.some((item) =>selectionConfig.checkedList.includes(item[props.rowKey]))
     }
+  })
+  watch(selectNum,(val)=>{
+    selectionConfig.selectNum = val
   })
   const cancelCurSelection = () => {
     if(selectionConfig.type === 'all' ){

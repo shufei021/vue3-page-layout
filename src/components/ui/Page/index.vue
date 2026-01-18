@@ -2,15 +2,15 @@
   <!-- 表格页面完整模板 -->
     <div class="page">
       <!-- 头部: 左侧面包屑或则自定义或则不显示、右侧操作按钮群组 -->
-        <Header v-if="headerConfig" :config="headerConfig">
+        <Header v-if="headerConfig" :config="headerConfig" ref="headerRef">
           <template #header-left>
             <slot name="header-left"></slot>
           </template>
         </Header>
         <!-- 搜索表单 -->
-        <SearchForm v-if="formConfig" :config="formConfig" @submit="submit"></SearchForm>
+        <SearchForm v-if="formConfig" :config="formConfig" @submit="submit" ref="formRef" :pageState="pageState"></SearchForm>
         <!-- 表格 -->
-        <CustomTable v-if="tableConfig" ref="rableRef" :config="tableConfig"></CustomTable>
+        <CustomTable v-if="tableConfig" :config="tableConfig" ref="tableRef" :pageState="pageState"></CustomTable>
         <slot name="dialog"></slot>
     </div>
 </template>
@@ -35,21 +35,31 @@ const formConfig = computed(() => {
 const tableConfig = computed(() => {
   return props.config.table;
 });
-const rableRef = ref(null);
+const headerRef = ref(null);
+const formRef = ref(null);
+const tableRef = ref(null);
+//  收集子组件的状态统一到父组件，进行对外抛出进行访问和调用
+const pageState = computed(() => {
+  return {
+    header:()=> headerRef.value,
+    form:()=> formRef.value,
+    table:()=> tableRef.value,
+  };
+})
 const submit = () => {
-  rableRef.value.handleCommand('cancel');
-  rableRef.value.handleCurrentChange(1);
+  tableRef.value.handleCommand('cancel');
+  tableRef.value.handleCurrentChange(1);
 };
 defineExpose({
-  handleCommand:(name)=> rableRef.value.handleCommand(name),
-  updateList: () => rableRef.value.updateList(),
-  selectionConfig: () => rableRef.value.selectionConfig,
-  tableData: () => rableRef.value.tableData,
+  handleCommand:(name)=> tableRef.value.handleCommand(name),
+  updateList: () => tableRef.value.updateList(),
+  selectionConfig: () => tableRef.value.selectionConfig,
+  tableData: () => tableRef.value.tableData,
+  pageState: pageState,
 })
 </script>
 <style scoped>
 .page {
     --el-color-primary: #0052d9;
 }
-
 </style>

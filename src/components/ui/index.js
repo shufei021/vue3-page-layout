@@ -4,6 +4,10 @@ import CustomTable from "./CustomTable/index.vue";
 import Page from "./Page/index.vue";
 import SvgIcon from "./SvgIcon/index.vue";
 const langSet = (app) => {
+  if(!app.config.globalProperties?.$t){
+    app.config.globalProperties.$isNotLang = true
+    app.config.globalProperties.$t = (val)=>val
+  }
   app.config.globalProperties.$uiLangConfig = {
     reset: {
       cn: "重置",

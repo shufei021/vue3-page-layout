@@ -1,11 +1,12 @@
 <template>
-    <Page :config="config"></Page>
+    <Page :config="config" ref="pageRef"></Page>
 </template>
 <script setup>
 import { Page } from "@/components/ui"
+import { ref, toRaw } from "vue";
 import { ElButton, ElTag } from "element-plus";
+import { de } from "element-plus/es/locales.mjs";
 
-// import { Location } from '@element-plus/icons-vue'
 const api = (page) => {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
@@ -37,22 +38,40 @@ const api = (page) => {
         }, 100)
     })
 }
-
+const pageRef = ref()
 const config = {
     header: {
-        path: ['订单管理', '订单列表'],
+        path: [{ name: '订单管理',to:{path:'/order/list'} }, '订单列表'],
         buttons: [
-            {
-                type: 'primary', name: '新增', click: () => {
-                    console.log('%c [  ]-47', 'font-size:13px; background:pink; color:#bf2c9f;')
-                }
+        {
+            
+            name: '新增',
+            icon:'add',
+            props:{
+                type: 'primary',
             },
-            { type: 'primary', name: '导出' },
-            { type: 'primary', name: '打印' }
-        ]
+            click: () => {
+                console.log('%c [ pageRef.value ]-52', 'font-size:13px; background:pink; color:#bf2c9f;', pageRef.value.pageState.header().left())
+                console.log('%c [ pageRef.value ]-52', 'font-size:13px; background:pink; color:#bf2c9f;', pageRef.value.pageState.header().right())
+                console.log('%c [ pageRef.value ]-52', 'font-size:13px; background:pink; color:#bf2c9f;', toRaw(pageRef.value.pageState.form().outerForm))
+                console.log('%c [ pageRef.value ]-52', 'font-size:13px; background:pink; color:#bf2c9f;', pageRef.value.pageState.table())
+            }
+        },
+        { 
+            name: '导出',
+            props:{
+                type: 'success',
+            },
+            click: () => {} 
+        },
+        { 
+            name: '打印',
+            click: () => {}
+        }
+    ]
     },
     form: {
-        showRest: false,
+        showRest: true,
         formItems: [
             {
                 prop: 'keyword',
@@ -154,16 +173,17 @@ const config = {
         table: {
             config: {
                 selection: true,
+                isShowSelectAll: true,
                 columns: [
                     {
                         prop: 'id',
                         label: '订单编号',
                         slots: {
                             default: (row, h) => {
-                                return h('div', {}, row.id)
+                                return h('div', {},   { default:()=>row.id})
                             },
                             header: (column, h) => {
-                                return h('div', {}, '自定义表头')
+                                return h('div', {}, { default:()=>'自定义表头11'})
                             }
                         }
                     },
@@ -189,7 +209,7 @@ const config = {
                             //     return h(ElTag, { type: 'primary' }, row.status)
                             // },
                             header: (column, h) => {
-                                return h(ElButton, { type: 'primary', onClick: () => console.log('click') }, '编辑')
+                                return h(ElButton, { type: 'primary', onClick: () => console.log('click') },{ default:()=>'自定义表头'})
                             }
                         }
                     },
@@ -357,16 +377,16 @@ const config = {
                         }
                     ],
                     transformPram: ({ pageCommon }) => {
+                        console.log('%c [transformPram pageCommon ]-380', 'font-size:13px; background:pink; color:#bf2c9f;', pageCommon)
                         return {
-                            prepaidId: pageCommon?.form?.prepaidId || '',
-                            prepaidTypeCode: pageCommon?.form?.prepaidType || 0,
+                         a:1
                         }
                     },
                     onChange: ({ item, pageCommon, updateList }) => {
-                        updateList({
-                            prepaidStatus: item.code,
-                            prepaidId: pageCommon?.form?.prepaidId || '',
-                        })
+                       console.log('%c [onChange updateList ]-386', 'font-size:13px; background:pink; color:#bf2c9f;', updateList)
+                       console.log('%c [onChange pageCommon ]-386', 'font-size:13px; background:pink; color:#bf2c9f;', pageCommon)
+                       console.log('%c [onChange item ]-386', 'font-size:13px; background:pink; color:#bf2c9f;', item)
+                       
                     }
                 }
             }
