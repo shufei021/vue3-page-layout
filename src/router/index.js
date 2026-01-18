@@ -3,7 +3,18 @@ import { createRouter, createWebHistory } from "vue-router";
 
 const router = createRouter({
   history: createWebHistory(),
-  routes:[]
+  routes:[
+    {
+      path: "/",
+      name: "Home",
+      component: () => import("../views/Home/index.vue"),
+    },
+    {
+      path: "/design",
+      name: "StoreDesign",
+      component: () => import("../views/StoreDesign/index.vue"),
+    },
+  ]
 });
 
 
