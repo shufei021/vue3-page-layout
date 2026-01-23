@@ -12,7 +12,7 @@
 <script setup>
 import Header from "./components/Header.vue";
 import Left from "./components/Left.vue";
-import Middle from "./components/Middle.vue";
+import Middle from "./components/canvas/Middle.vue";
 import Right from "./components/Right.vue";
 
 </script>

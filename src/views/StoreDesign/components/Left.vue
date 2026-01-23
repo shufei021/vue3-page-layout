@@ -38,10 +38,11 @@
           <div
             v-for="component in group.components"
             :key="component.type"
-            class="component-card"
+            class="component-card draggable"
             draggable="true"
-            @dragstart="handlePaletteDragStart(component.type, $event)"
-            @dragend="resetDragIndicator"
+            :data-type="component.type"
+            @dragstart="dragstart"
+            @dragend="dragend"
             @click="handleAddComponent(component.type)"
           >
             <div class="component-card__icon">
@@ -67,6 +68,14 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { Search, Plus, Grid, Picture, ShoppingCart, Ticket, User, ChatDotSquare } from '@element-plus/icons-vue'
+import Title from '../assets/title.svg'
+import Carousel from '../assets/carousel.svg'
+import Tiles from '../assets/tiles.svg'
+import Banner from '../assets/banner.svg'
+import Hot from '../assets/hot.svg'
+import Showcase from '../assets/product-group.svg'
+import Arrival from '../assets/arrival.svg'
+import Recommend from '../assets/recommend.svg'
 
 // 搜索文本
 const searchText = ref('')
@@ -89,12 +98,14 @@ const componentGroups = [
     name: 'basic',
     title: '基础组件',
     components: [
-      { type: 'button', label: '按钮', icon: 'Pointer', description: '可配置文字、样式、事件的按钮' },
-      { type: 'text', label: '文本', icon: 'Edit', description: '普通文本，可设置样式和内容' },
-      { type: 'image', label: '图片', icon: 'Picture', description: '图片展示组件' },
-      { type: 'divider', label: '分割线', icon: 'Minus', description: '用于内容分隔' },
-      { type: 'spacer', label: '间距', icon: 'Expand', description: '空白间距组件' },
-      { type: 'container', label: '容器', icon: 'Folder', description: '用于包裹其他组件的容器' }
+      { type: 'title', label: 'Title', icon: Title, description: '标题组件' },
+      { type: 'slider', label: 'Slider', icon: Carousel, description: '轮播图组件' },
+      { type: 'tiles', label: 'Tiles', icon: Tiles, description: '百宝箱组件' },
+      { type: 'banner', label: 'Banner', icon: Banner, description: '横幅组件' },
+      { type: 'hotarea', label: 'Shoppable image', icon: Hot, description: '图片热区组件' },
+      { type: 'group', label: 'Product showcase', icon: Showcase, description: '商品组组件' },
+      { type: 'arrival', label: 'New arrival', icon: Arrival, description: '新品上市组件' },
+      { type: 'recommend', label: 'For you', icon: Recommend, description: '为你推荐组件' },
     ]
   },
   {
@@ -182,12 +193,13 @@ const handleCategoryChange = () => {
   console.log('切换分类到:', activeCategory.value)
 }
 
-const handlePaletteDragStart = (componentType, event) => {
-  emit('drag-start', componentType, event)
+const dragstart = (e) => {
+  // 设置被拖动的元素（用于在 drop 时识别）
+  e.target.classList.add('dragging');
 }
 
-const resetDragIndicator = () => {
-  // 重置拖拽指示器
+const dragend = (e) => {
+  e.target.classList.remove('dragging');
 }
 
 const handleAddComponent = (componentType) => {
