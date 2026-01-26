@@ -2,7 +2,7 @@
   <div class="middle">
     <div class="container">
       <div class="com-warap" @dragover="dragover" @dragleave="dragleave" @drop="drop">
-        <component :is="component.com" v-for="(component) in components" :key="component.id"></component>
+        <component :is="component.com" v-for="(component) in components" :key="component.id" @click="clickComponent(component)" :config="component.rightConfig"></component>
       </div>
     </div>
   </div>
@@ -10,13 +10,14 @@
 
 <script setup>
 import { ref,markRaw } from 'vue'
+const emit = defineEmits(['outputComponentConfig'])
 const modules = import.meta.glob('./components/*.vue', { eager: true });
 const map = {};
 for (const path in modules) {
     const module = modules[path];
     const fileName = path.split('/').pop()?.replace(/\.[^/.]+$/, '') || '';
     map[fileName] = module.default;
-}
+  }
 const dragover = (e) => {
   e.preventDefault();
   e.target.classList.add('drag-over');
@@ -28,6 +29,10 @@ const dragleave = (e) => {
 function capitalizeFirstLetter(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
+function clickComponent(component) {
+  if( component.status === 'add') component.status = 'edit'
+  emit('outputComponentConfig', component)
+}
 const components = ref([])
 // 处理放置组件（从左侧拖拽过来）
 const drop = (e) => {
@@ -38,10 +43,13 @@ const drop = (e) => {
     // 获取被拖动的元素组件类型
     const type = capitalizeFirstLetter(draggingElement.dataset.type)
     const com = map[type]
+    const initConfig = com.props.initConfig.default()
     components.value.push({
       id: Date.now(),
       type,
-      com:markRaw(com)
+      com:markRaw(com),
+      rightConfig: initConfig,
+      status: 'add',
     })
     // 将元素移动到当前 dropzone 中
     // e.target.appendChild(draggingElement);
@@ -60,7 +68,7 @@ const drop = (e) => {
   .container {
     width: 400px;
     height: 800px;
-    background-image: url('../assets/phone-border.png');
+    background-image: url('@/assets/phone-border.png');
     background-repeat: no-repeat;
     background-color: #fff;
     background-size: 95%;

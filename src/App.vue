@@ -141,6 +141,7 @@ const handleMenuSelect = (key) => {
   background-color: var(--bg-color);
   color: var(--text-color);
   transition: background-color 0.3s, color 0.3s;
+  min-width: 1125px;
 }
 
 // 顶部导航栏
@@ -155,7 +156,7 @@ const handleMenuSelect = (key) => {
   top: 0;
   z-index: 1000;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  
+  background-color: #fff;
   .header-container {
     display: flex;
     justify-content: space-between;
