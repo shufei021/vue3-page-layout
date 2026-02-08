@@ -14,23 +14,18 @@
       <el-sub-menu index="1">
         <template #title>
           <el-icon><TrendCharts /></el-icon>
-          <span>仪表盘</span>
+          <span>Page组件</span>
         </template>
-        <el-menu-item index="1-1" @click="navigate('/dashboard/overview')">
-          数据概览
-          <el-tag  size="small" type="primary">当前</el-tag>
+        <el-menu-item index="1-1" @click="navigate('/')">
+          <el-icon><TrendCharts /></el-icon> Page概览
         </el-menu-item>
-        <el-menu-item index="1-2" @click="navigate('/dashboard/performance')">
-          业绩统计
-        </el-menu-item>
-        <el-menu-item index="1-3"  @click="navigate('/design')">
-          商城装修
-          <el-badge is-dot />
+        <el-menu-item index="1-2" @click="navigate('/customTable')">
+          <el-icon><Setting /></el-icon> Page分析
         </el-menu-item>
       </el-sub-menu>
       
       <!-- 客户管理 -->
-      <el-sub-menu index="2">
+      <!-- <el-sub-menu index="2">
         <template #title>
           <el-icon><User /></el-icon>
           <span>客户管理</span>
@@ -46,9 +41,9 @@
           跟进记录
         </el-menu-item>
       </el-sub-menu>
-      
+       -->
       <!-- 产品服务 -->
-      <el-sub-menu index="3">
+      <!-- <el-sub-menu index="3">
         <template #title>
           <el-icon><ShoppingCart /></el-icon>
           <span>产品服务</span>
@@ -64,9 +59,9 @@
           服务记录
         </el-menu-item>
       </el-sub-menu>
-      
+       -->
       <!-- 系统设置 -->
-      <el-sub-menu index="4">
+      <!-- <el-sub-menu index="4">
         <template #title>
           <el-icon><Setting /></el-icon>
           <span>系统设置</span>
@@ -81,18 +76,18 @@
           系统日志
         </el-menu-item>
       </el-sub-menu>
-      
+       -->
       <!-- 其他菜单 -->
-      <el-menu-item index="5" @click="navigate('/documentation')">
+      <!-- <el-menu-item index="5" @click="navigate('/documentation')">
         <el-icon><Document /></el-icon>
         <span>文档中心</span>
       </el-menu-item>
-      
-      <el-menu-item index="6" @click="navigate('/help')">
+       -->
+      <!-- <el-menu-item index="6" @click="navigate('/help')">
         <el-icon><Phone /></el-icon>
         <span>帮助支持</span>
         <el-badge is-dot />
-      </el-menu-item>
+      </el-menu-item> -->
     </el-menu>
   </el-aside>
 </template>
