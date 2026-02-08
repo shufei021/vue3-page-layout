@@ -11,7 +11,7 @@
       :unique-opened="true"
     >
       <!-- Page -->
-      <el-sub-menu :index="index" v-for="(route,index) in routes">
+      <el-sub-menu :index="`${index}`" v-for="(route,index) in routes">
         <!-- 图标 -->
         <template #title>
           <el-icon><TrendCharts /></el-icon>

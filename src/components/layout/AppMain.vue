@@ -42,19 +42,24 @@
 <script  setup>
 import { ref } from 'vue'
 import Sidebar from './Sidebar.vue'
-// 菜单状态
-const breadcrumb = ref(['仪表盘', '数据概览'])
+import { routes } from '@/router'
 const activeMenu = ref('0-0')
-let tabIndex = 2
-const editableTabsValue = ref('0-0')
+const editableTabsValue = ref('0')
+
+
+const editableTabs = ref([
+    {
+        title: routes[0].children[0].meta.title,
+        name:  routes[0].children[0].meta.title,
+        content: '',
+    }
+])
 const handleMenuSelect = ({nav,index,idx}) => {
-  console.log('%c [ handleMenuSelect ]-48', 'font-size:13px; background:pink; color:#bf2c9f;', nav)
   if(editableTabs.value.some(item => item.name === nav.meta.title)) return
-//   breadcrumb.value = key.split('-')
-//   activeMenu.value = key
     editableTabs.value.push({
       title: nav.meta.title,
       name: nav.meta.title,
+      content: '',
     })
     editableTabsValue.value = `${index}-${idx}`
 }
@@ -65,29 +70,29 @@ const handleTabsEdit = (
   action
 ) => {
   if (action === 'add') {
-    const newTabName = `${++tabIndex}`
-    editableTabs.value.push({
-      title: 'New Tab',
-      name: newTabName,
-      content: 'New Tab content',
-    })
-    editableTabsValue.value = newTabName
+    // const newTabName = `${++tabIndex}`
+    // editableTabs.value.push({
+    //   title: 'New Tab',
+    //   name: newTabName,
+    //   content: 'New Tab content',
+    // })
+    // editableTabsValue.value = newTabName
   } else if (action === 'remove') {
-    const tabs = editableTabs.value
-    let activeName = editableTabsValue.value
-    if (activeName === targetName) {
-      tabs.forEach((tab, index) => {
-        if (tab.name === targetName) {
-          const nextTab = tabs[index + 1] || tabs[index - 1]
-          if (nextTab) {
-            activeName = nextTab.name
-          }
-        }
-      })
-    }
-
-    editableTabsValue.value = activeName
-    editableTabs.value = tabs.filter((tab) => tab.name !== targetName)
+    console.log('%c [ action ]-81', 'font-size:13px; background:pink; color:#bf2c9f;', action)
+    // const tabs = editableTabs.value
+    // let activeName = editableTabsValue.value
+    // if (activeName === targetName) {
+    //   tabs.forEach((tab, index) => {
+    //     if (tab.name === targetName) {
+    //       const nextTab = tabs[index + 1] || tabs[index - 1]
+    //       if (nextTab) {
+    //         activeName = nextTab.name
+    //       }
+    //     }
+    //   })
+    // }
+    // editableTabsValue.value = activeName
+    // editableTabs.value = tabs.filter((tab) => tab.name !== targetName)
   }
 }
 </script>
