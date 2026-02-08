@@ -10,8 +10,29 @@
       :active-text-color="isDarkTheme ? '#7c3aed' : '#7c3aed'"
       :unique-opened="true"
     >
-      <!-- 仪表盘 -->
-      <el-sub-menu index="1">
+      <!-- Page -->
+      <el-sub-menu :index="index" v-for="(route,index) in routes">
+        <!-- 图标 -->
+        <template #title>
+          <el-icon><TrendCharts /></el-icon>
+          <span>Page组件</span>
+        </template>
+
+        <el-menu-item :index="`${index}-${idx}`" @click="navigate(navItem,index,idx)"  v-for="(navItem,idx) in route.children">
+          <el-icon><TrendCharts /></el-icon>{{ navItem.meta.title }}
+        </el-menu-item>
+
+        <!-- <el-menu-item index="1-1" @click="navigate('/')">
+          <el-icon><TrendCharts /></el-icon> Page概览
+        </el-menu-item>
+
+        <el-menu-item index="1-2" @click="navigate('/customTable')">
+          <el-icon><Setting /></el-icon> Page分析
+        </el-menu-item> -->
+
+      </el-sub-menu>
+
+      <!-- <el-sub-menu index="1">
         <template #title>
           <el-icon><TrendCharts /></el-icon>
           <span>Page组件</span>
@@ -22,7 +43,7 @@
         <el-menu-item index="1-2" @click="navigate('/customTable')">
           <el-icon><Setting /></el-icon> Page分析
         </el-menu-item>
-      </el-sub-menu>
+      </el-sub-menu> -->
       
       <!-- 客户管理 -->
       <!-- <el-sub-menu index="2">
@@ -99,19 +120,19 @@ import {
   TrendCharts, User, ShoppingCart, Setting,
   Document, Phone
 } from '@element-plus/icons-vue'
-
+import { routes } from '@/router'
 const props = defineProps({
   activeMenu: String
 })
 
 const emit = defineEmits(['menu-select'])
-
 const router = useRouter()
 
+
 // 导航到对应路由
-const navigate = (path) => {
-  router.push(path)
-  emit('menu-select', props.activeMenu)
+const navigate = (nav,index,idx) => {
+  router.push(nav.path)
+  emit('menu-select', {nav,index,idx})
 }
 
 // 检查当前主题

@@ -7,12 +7,13 @@
         :active-menu="activeMenu"
         @menu-select="handleMenuSelect"
       />
+      
       <!-- 主内容区 -->
       <el-container class="view-container">
         <el-tabs
-            v-model="editableTabsValue"
            type="border-card"
             editable
+            v-model="editableTabsValue"
             class="demo-tabs"
             @edit="handleTabsEdit"
         >
@@ -43,25 +44,22 @@ import { ref } from 'vue'
 import Sidebar from './Sidebar.vue'
 // 菜单状态
 const breadcrumb = ref(['仪表盘', '数据概览'])
-const activeMenu = ref('1-1')
-const handleMenuSelect = (key) => {
-  breadcrumb.value = key.split('-')
-  activeMenu.value = key
-}
+const activeMenu = ref('0-0')
 let tabIndex = 2
-const editableTabsValue = ref('2')
-const editableTabs = ref([
-  {
-    title: 'Tab 1',
-    name: '1',
-    content: 'Tab 1 content',
-  },
-  {
-    title: 'Tab 2',
-    name: '2',
-    content: 'Tab 2 content',
-  },
-])
+const editableTabsValue = ref('0-0')
+const handleMenuSelect = ({nav,index,idx}) => {
+  console.log('%c [ handleMenuSelect ]-48', 'font-size:13px; background:pink; color:#bf2c9f;', nav)
+  if(editableTabs.value.some(item => item.name === nav.meta.title)) return
+//   breadcrumb.value = key.split('-')
+//   activeMenu.value = key
+    editableTabs.value.push({
+      title: nav.meta.title,
+      name: nav.meta.title,
+    })
+    editableTabsValue.value = `${index}-${idx}`
+}
+
+
 const handleTabsEdit = (
   targetName,
   action
@@ -95,14 +93,23 @@ const handleTabsEdit = (
 </script>
 
 <style scoped>
+.main-container{
+    overflow: hidden;
+}
 .view-container{
     display: flex;
     flex-direction: column;
+    height: 100%;
+    overflow: hidden;
 }
 :deep(.el-tabs__content){
     display: none;
 }
 .sass-main{
+    flex: 1;
     padding: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 </style>

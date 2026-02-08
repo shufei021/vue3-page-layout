@@ -377,7 +377,7 @@ const { tabLoad,initTabs,changeTab } = useTab(Table,props)
 let timer = null
 // 计算哪些按钮可见
 const calculateVisibleButtons = () => {
-   const selectNum = props.pageState?.table()?.selectionConfig?.selectNum || 0
+   const selectNum = props?.pageState?.table?.()?.selectionConfig?.selectNum || 0
   if(!selectNum)return
   clearTimeout(timer)
   timer = setTimeout(() => {
