@@ -44,24 +44,24 @@ import { ref } from 'vue'
 import Sidebar from './Sidebar.vue'
 import { routes } from '@/router'
 const activeMenu = ref('0-0')
-const editableTabsValue = ref('0')
+const editableTabsValue = ref('0-0')
 
 
 const editableTabs = ref([
     {
         title: routes[0].children[0].meta.title,
-        name:  routes[0].children[0].meta.title,
+        name:  '0-0',
         content: '',
     }
 ])
 const handleMenuSelect = ({nav,index,idx}) => {
-  if(editableTabs.value.some(item => item.name === nav.meta.title)) return
+     editableTabsValue.value = `${index}-${idx}`
+  if(editableTabs.value.some(item => item.name === editableTabsValue.value)) return
     editableTabs.value.push({
       title: nav.meta.title,
-      name: nav.meta.title,
+      name: `${index}-${idx}`,
       content: '',
     })
-    editableTabsValue.value = `${index}-${idx}`
 }
 
 
