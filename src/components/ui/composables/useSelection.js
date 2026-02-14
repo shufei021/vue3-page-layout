@@ -1,4 +1,5 @@
-import { ref, reactive, watchEffect,computed,watch } from "vue";
+import { ref, reactive, watchEffect,computed } from "vue";
+import util from "../utils";
 
 export default function useSelection(Table, tableData,Page) {
   const props = Table.value.props;
@@ -11,7 +12,7 @@ export default function useSelection(Table, tableData,Page) {
     type: "cur", // all - 全部选中状态, cur - 当前页状态
     checkedList: [], // 当前页状态下选中列表
     uncheckedList: [], // 全选状态下的取消选择列表
-    selectNum: 0,
+    checkedRows: [], // 当前页状态下选中行
   });
 
   watchEffect(() => {
@@ -61,6 +62,9 @@ export default function useSelection(Table, tableData,Page) {
         isCurAllSelected.value = false;
         isIndeterminate.value = false;
       }
+    }
+    if(!tableData.value.length){
+      isCurAllSelected.value = false
     }
   });
   // 当前页是否是否全选和取消全选的复选框状态切换
@@ -114,6 +118,10 @@ export default function useSelection(Table, tableData,Page) {
             (item) =>
               !tableData.value.map((item) => item[props.rowKey]).includes(item)
           );
+          selectionConfig.checkedRows = selectionConfig.checkedRows.filter(
+            (item) =>
+              !tableData.value.map((item) => item[props.rowKey]).includes(item[props.rowKey])
+          );
         } else {
           selectionConfig.checkedList = [
             ...new Set([
@@ -121,6 +129,7 @@ export default function useSelection(Table, tableData,Page) {
               ...tableData.value.map((item) => item[props.rowKey]),
             ]),
           ];
+          selectionConfig.checkedRows = util.unique([...selectionConfig.checkedRows, ...tableData.value],props.rowKey) 
         }
       } else {
         // 取消全选
@@ -164,10 +173,14 @@ export default function useSelection(Table, tableData,Page) {
       if (checked) {
         // 选中
         selectionConfig.checkedList.push(row[props.rowKey]);
+        selectionConfig.checkedRows.push(row);
       } else {
         // 取消勾选
         selectionConfig.checkedList = selectionConfig.checkedList.filter(
           (item) => item !== row[props.rowKey]
+        );
+        selectionConfig.checkedRows = selectionConfig.checkedRows.filter(
+          (item) => item[props.rowKey] !== row[props.rowKey]
         );
       }
     }
@@ -178,11 +191,13 @@ export default function useSelection(Table, tableData,Page) {
       selectionConfig.checkedList = [];
       selectionConfig.type = "all";
       isCurAllSelected.value = true;
+      selectionConfig.checkedRows =[]
     } else {
       selectionConfig.uncheckedList = [];
       selectionConfig.checkedList = [];
       selectionConfig.type = "cur";
       isCurAllSelected.value = false;
+      selectionConfig.checkedRows =[]
     }
   };
   const selectNum = computed(()=>{
@@ -200,9 +215,6 @@ export default function useSelection(Table, tableData,Page) {
       return  tableData.value.some((item) =>selectionConfig.checkedList.includes(item[props.rowKey]))
     }
   })
-  watch(selectNum,(val)=>{
-    selectionConfig.selectNum = val
-  })
   const cancelCurSelection = () => {
     if(selectionConfig.type === 'all' ){
       selectionConfig.uncheckedList = [
@@ -213,6 +225,7 @@ export default function useSelection(Table, tableData,Page) {
       ];
     } else{
       selectionConfig.checkedList =  selectionConfig.checkedList.filter((item) => !tableData.value.map(i=>i[props.rowKey]).includes(item))
+      selectionConfig.checkedRows = selectionConfig.checkedRows.filter((item) => !tableData.value.map(i=>i[props.rowKey]).includes(item[props.rowKey]))
     }
   }
 

@@ -1,7 +1,10 @@
 <template>
   <div class="custom-table" v-loading="loading">
-    <Tab v-if="tabLoad && Table.config.tab && Table.config.tab.tabs.length" :tabs="Table.config.tab.tabs" @change="(obj)=>changeTab({...obj,updateList})"></Tab>
-    <el-table ref="tableRef" v-bind="{ ...$attrs, ...Table.props }" v-loading="loading" :data="tableData" size="small"
+    <slot name="table-header"></slot>
+    <Tab :pageCommonState="pageCommonState" v-if="tabLoad && Table.config.tab && Table.config.tab.tabs.length"
+      :tabs="Table.config.tab.tabs" :buttons="Table.config.tab.buttons || []" :isCount="Table.config.tab.isCount"
+      @change="(...args) => onChange(updateList, pageCommonState, ...args)"></Tab>
+    <el-table ref="tableRef" v-bind="{ ...$attrs, ...Table.props }"  :data="tableData" size="small"
       @sort-change="handleSortChange">
       <!-- 序号列 -->
       <el-table-column v-if="Table.config.index" type="index" :index="Table.config.indexMethod" label="序" width="60"
@@ -13,17 +16,17 @@
           <div class="selection-header-wrapper">
             <div style="display: flex; align-items: center; justify-content: center;">
               <!-- 复选框单独控制 -->
-              <el-checkbox :model-value="isCurAllSelected" @change="toggleAllSelection" :indeterminate="isIndeterminate"
-                style="margin-right: 4px" />
+              <el-checkbox :disabled="!tableData.length" :model-value="isCurAllSelected" @change="toggleAllSelection" :indeterminate="isIndeterminate"/>
               <!-- 下拉菜单仅由箭头触发 -->
               <el-dropdown trigger="click" @command="handleCommand" v-if="Table.config.isShowSelectAll">
-                <el-icon style="cursor: pointer; position: absolute;transform: translate(-2px, -8px);">
+                <el-icon style="cursor: pointer; position: absolute;transform: translate(-2px, -11px);">
                   <arrow-down />
                 </el-icon>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item command="all" v-if="selectionConfig.type === 'cur'">{{Lang.selectAll}}</el-dropdown-item>
-                    <el-dropdown-item command="cancel" v-else>{{Lang.clearAll}}</el-dropdown-item>
+                    <el-dropdown-item command="all" v-if="selectionConfig.type === 'cur'">{{ Lang.selectAll
+                      }}</el-dropdown-item>
+                    <el-dropdown-item command="cancel" v-else>{{ Lang.clearAll }}</el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -32,18 +35,20 @@
         </template>
 
         <template #default="{ row }">
-          <el-checkbox :model-value="isSelected(row)" @change="(checked) => handleRowCheck(checked, row)" />
+          <div style="width: 100%;height: 100%;display: flex;justify-content: center;align-items: center;">
+            <el-checkbox :model-value="isSelected(row)" @change="(checked) => handleRowCheck(checked, row)" />
+          </div>
         </template>
       </el-table-column>
-      
+
       <!-- 数据列 -->
       <template v-for="column in Table.config.columns" :key="column.prop">
         <el-table-column :prop="column.prop" :label="column.label" :width="column.width" :min-width="column.minWidth"
           :align="column.align || 'left'" :fixed="column.fixed" :sortable="column.sortable"
           :show-overflow-tooltip="column.showOverflowTooltip !== false">
           <!-- 头部插槽 -->
-          <template #header="{ column:col }">
-            <component v-if="column.slots.header" :is="column.slots.header(col,h)"></component>
+          <template #header="{ column: col }">
+            <component v-if="column.slots.header" :is="column.slots.header(col, h)"></component>
             <slot :name="`header-${col.prop}`" :column="col" v-else>
               <span>{{ col.label }}</span>
             </slot>
@@ -55,10 +60,11 @@
               <component :is="column.slots.default(row)"></component>
             </div>
             <!-- 自定义渲染列 -->
-            <component v-else-if="column.slots.default" :is="column.slots.default(row,h)"></component>
+            <component v-else-if="column.slots.default" :is="column.slots.default(row, h)"></component>
             <!-- 默认列 -->
             <slot :name="`column-${column.prop}`" :row="row" :index="$index" v-else>
-              <span :style="{...(column.props && column.props.style || {})}">{{ renderDefaultCell(row, column) }}</span>
+              <span :style="{ ...(column.props && column.props.style || {}) }">{{ renderDefaultCell(row, column)
+                }}</span>
             </slot>
           </template>
 
@@ -68,17 +74,22 @@
       <!-- 空数据 -->
       <template #empty>
         <slot name="empty">
-          <div class="empty-text"><el-empty :description="Lang.noData" /></div>
+          <div class="empty-text">
+            <SvgcIcon name="empty" style="width: 80px;height: 80px;"></SvgcIcon>
+            <div style="line-height: 40px;">{{ Lang.noData }}</div>
+            <!-- <el-empty :description="Lang.noData" /> -->
+          </div>
         </slot>
       </template>
     </el-table>
 
-    <div class="footer" v-if="Table.config.selection ||  Table.config.page">
+    <div class="footer" v-if="Table.config.selection || Table.config.page">
       <div class="hd" v-if="Table.config.selection && selectNum">
-        <el-button style="background-color: #fff!important;color:#0052d9!important" type="primary" link @click="cancel" v-if="isCurHasSelected">{{Lang.cancel}}</el-button>
+        <el-button style="background-color: #fff!important;color:#0052d9!important" type="primary" link @click="cancel"
+          v-if="isCurHasSelected">{{ Lang.cancel }}</el-button>
         <span class="line" v-if="isCurHasSelected"></span>
         <el-checkbox v-model="isCancelChecked">
-           {{ transform(Lang.PRIVATE_INFO.total, {count:selectNum})}}
+          {{ transform(Lang.PRIVATE_INFO.total, { count: selectNum }) }}
         </el-checkbox>
         <span class="line"></span>
         <div class="batch-options-list-btn" ref="containerRef">
@@ -119,9 +130,9 @@
       </div>
       <div class="bt" v-if="Table.config.page">
         <div class="select-info">
-          {{ transform(Lang.PRIVATE_INFO.page, {total: Page.props.total, pageSize: Page.props.pageSize})}}
+          <!-- {{ transform(Lang.PRIVATE_INFO.page, {total: Page.props.total, pageSize: Page.props.pageSize})}} -->
         </div>
-        <el-pagination  v-bind="{ ...$attrs, ...Page.props }" @size-change="handleSizeChange"
+        <el-pagination v-bind="{ ...$attrs, ...Page.props }" @size-change="handleSizeChange"
           @current-change="handleCurrentChange">
           <!-- 自定义插槽，可扩展额外内容 -->
           <slot />
@@ -132,26 +143,28 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, onMounted, onUnmounted, nextTick, h, Fragment } from 'vue'
-import { ElButton,ElImage, ElTag } from 'element-plus'
+import { computed, ref, watch, onMounted, onUnmounted, nextTick, h, Fragment,toRaw } from 'vue'
+import { ElButton, ElImage, ElTag } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { ArrowDown } from '@element-plus/icons-vue'
 import SvgcIcon from '../SvgIcon/index.vue'
 import useTab from '../composables/useTab.js'
 import useSelection from '../composables/useSelection.js'
 import useLangConfig from '../composables/useLangConfig.js'
-import useInstanceAttribute  from '../composables/useInstanceAttribute.js'
+import useInstanceAttribute from '../composables/useInstanceAttribute.js'
 import Tab from '../Tab/index.vue'
+import util from '../utils'
+import dayjs from 'dayjs'
 const { Lang, transform, isUseLang } = useLangConfig()
 const t = useInstanceAttribute('$t')
-
 const router = useRouter()
+const finalForm = ref({})
 // 批量操作映射
 const actionMap = {
   'undo': { name: Lang.value.cancelOrder, type: 'undo', click: (row) => { console.log('撤销', row) } },
   'del': { name: Lang.value.delete, type: 'del', click: (row) => { console.log('删除', row) } },
   'enable': { name: Lang.value.enable, type: 'enable', click: (row) => { console.log('启用', row) } },
-  'print': { name:  Lang.value.print, type: 'print', click: (row) => { console.log('打印', row) } },
+  'print': { name: Lang.value.print, type: 'print', click: (row) => { console.log('打印', row) } },
   'review': { name: Lang.value.review, type: 'review', click: (row) => { console.log('审核', row) } },
   'disable': { name: Lang.value.disable, type: 'disable', click: (row) => { console.log('禁用', row) } },
   'pass': { name: Lang.value.approve, click: (row) => { console.log('通过', row) } },
@@ -185,10 +198,10 @@ const props = defineProps({
       }
     })
   },
-  pageState: {
+  pageCommonState: {
     type: Object,
     default: () => ({})
-  },
+  }
 })
 
 // 表格配置
@@ -215,10 +228,10 @@ const Table = computed(() => {
   if (columns) {
     columns.forEach(column => {
       // 没有就初始化一个
-      if(!column.slots){
-        column.slots ={}
+      if (!column.slots) {
+        column.slots = {}
       }
-      if(isUseLang.value){
+      if (isUseLang.value) {
         column.label = t(column.label)
       }
       if (column.prop === 'action') {
@@ -228,7 +241,7 @@ const Table = computed(() => {
               if (typeof btn.visible === 'function') {
                 if (!btn.visible(row)) return []
               }
-             const style = {
+              const style = {
                 fontFamily: '"Switzer-Regular"',
                 fontWeight: 400,
                 fontSize: '14px',
@@ -243,74 +256,127 @@ const Table = computed(() => {
                 style,
                 ...(btn.props || {}),
                 disabled: btn.disable ? btn.disable(row) : false,
-                onClick: () => btn.click(row,router),
-              }, {default:() => btn.name})]
+                onClick: () => btn.click(row, router,{pageCommonState : props.pageCommonState,finalForm: toRaw(finalForm.value)}),
+              }, () => isUseLang.value ? t(btn.name) : btn.name)]
             }
             ))
           }
         }
-      } else if(column.type === 'img'){
-        column.align="center"
-        column.width = column?.prop?.width  || '80px'
+      } else if (column.type === 'img') {
+        column.align = "center"
+        column.width = column?.width || '180px'
         column.slots.default = (row) => {
-          const{ prop:{ key,width,height,size } = {} } = column
+          const { props: { key, width, height, size } = {} } = column
           const src = key ? row[key] : row.url || row.imgUrl
+          const url = column?.formatter?.(row) || src
           return h(ElImage, {
-            src,
-            previewSrcList: [src],
-            hideOnClickModal:true,
-            previewTeleported:true,
-            style:{
-              width:  parseInt(width || size || 40) + 'px',
-              height:  parseInt(height || size || 40) + 'px',
+            src:Array.isArray(url) ? url[0] : url,
+            previewSrcList: Array.isArray(url)? url: [url],
+            hideOnClickModal: true,
+            previewTeleported: true,
+            style: {
+              width: parseInt(width || size || 40) + 'px',
+              height: parseInt(height || size || 40) + 'px',
+              verticalAlign: 'middle'
             },
+            fit: 'cover',
             ...(column.props || {}),
+          },
+          {
+            error: () => h('div', {
+              style: {
+                width: parseInt(width || size || 40) + 'px',
+                height: parseInt(height || size || 40) + 'px',
+              },
+            }, () => ''),
           })
         }
-      } else if(column.type === 'currency'){
+      } else if (column.type === 'currency') {
         column.slots.default = (row) => {
-          if (Object.keys(row).length){
-            column.props.style = { marginRight:'2px',  width:  parseInt(column?.props?.style?.width || column?.props?.size || 12) + 'px',height:  parseInt(column?.props?.style?.height || column?.props?.size|| 12) + 'px',color:'#1A1A1Aed',...(column?.props?.style || {}) }
-            return h(Fragment, {}, [
-              h(column?.props?.currency ||  SvgcIcon, {
-                name: 'currency',
-                ...(column.props || {}),
-              }),
-              h('span',{
-                style:{
-                  ...(column?.props?.textStyle || {}),
-                }
-              },renderDefaultCell(row,column))
-            ])
-          }
-        }
-      } else if(column.type === 'tag'){
+          if (Object.keys(row).length === 0) return null;
+
+          // ✅ 不修改 column，只读取其值
+          const size = parseInt(column?.props?.size || 12, 10);
+          const width = parseInt(column?.props?.style?.width || size, 10);
+          const height = parseInt(column?.props?.style?.height || size, 10);
+
+          const iconProps = {
+            name: 'currency',
+            style: {
+              marginRight: '2px',
+              width: `${width}px`,
+              height: `${height}px`,
+              color: '#1A1A1Aed',
+              ...(column?.props?.style || {}),
+            },
+            ...(column.props ? { ...column.props } : {}),
+          };
+
+          delete iconProps.style; 
+          const otherProps = { ...column.props };
+          delete otherProps.style;
+
+          return h(column?.props?.currency || Fragment, {}, [
+            h(SvgcIcon, {
+              name: 'currency',
+              style: {
+                marginRight: '2px',
+                width: `${width}px`,
+                height: `${height}px`,
+                color: '#1A1A1Aed',
+                transform: 'translateY(-1px)',
+                ...(column?.props?.style || {}),
+              },
+              ...otherProps,
+            }),
+            h('span', {
+              style: {
+                ...(column?.props?.textStyle || {}),
+              }
+            }, renderDefaultCell(row, column))
+          ]);
+        };
+      } else if (column.type === 'tag') {
         column.slots.default = (row) => {
           if (Object.keys(row).length) {
-            return h(Fragment, {},  h(ElTag, {
-                ...(column.props || {}),
-              },()=> renderDefaultCell(row,column))
+            return h(Fragment, {}, h(ElTag, {
+              ...(column.props || {}),
+            }, () => renderDefaultCell(row, column))
             )
           }
         }
-      }else if(column.type === 'status'){
+      } else if (column.type === 'status') {
         column.slots.default = (row) => {
-          if (Object.keys(row).length) {
-            column.props.style = { marginRight:'4px',   width:  parseInt(column?.props?.style?.width || column?.props?.size || 12) + 'px',height:  parseInt(column?.props?.style?.height || column?.props?.size|| 12) + 'px',...(column?.props?.style || {}) }
-            column.props.style.color = column?.props?.colorFormat?.(row) || column?.props?.color || '#ccc'
-            return h(Fragment, {},  [
-              h(SvgcIcon, {
-                name: 'dot',
-                ...(column.props || {}),
-              }),
-              h('span',{
-                style:{
+          if (Object.keys(row).length === 0) return null;
+
+          const baseProps = column.props || {};
+          const size = parseInt(baseProps.style?.width || baseProps.size || 12);
+          const color = baseProps.colorFormat?.(row) || baseProps.color || '#ccc';
+
+          // 构造新的 style 对象（不污染原始 column）
+          const dotStyle = {
+            marginRight: '4px',
+            width: size + 'px',
+            height: size + 'px',
+            color,
+            ...(baseProps.style || {}),
+          };
+
+          // 所有数据都来自 row 和 column 的只读属性，不 mutate 任何响应式对象
+          return h(Fragment, {}, [
+            h(SvgcIcon, {
+              name: 'dot',
+              ...baseProps,        // 原始 props
+              style: dotStyle,     // 覆盖 style（新建对象）
+            }),
+            h('span', {
+               style:{
                   ...(column?.props?.textStyle || {}),
+                  ...(typeof column?.props?.textColorFormat === 'function'?{color: column?.props?.textColorFormat(row)}:{})
                 }
-              },renderDefaultCell(row,column))
-            ])
-          }
-        }
+            }, renderDefaultCell(row, column))
+          ]);
+        };
       }
     })
   }
@@ -330,9 +396,9 @@ const defaultPageProps = ref({
   total: 0,
   currentPage: 1,
   pageSize: 50,
-  pageSizes: [50, 100,200],
+  pageSizes: [50, 100, 200],
   background: true,
-  layout: 'prev, pager, next, sizes'
+  layout: 'total, sizes, prev, pager, next, jumper'
 })
 // 默认分页配置
 const defaultPageConfig = ref({
@@ -373,15 +439,12 @@ const buttonRefs = ref([]);
 const hiddenButtons = ref([]); // 其余隐藏
 const visibleButtons = ref([]);
 
-const { tabLoad,initTabs,changeTab } = useTab(Table,props)
+const { tabLoad, initTabs, active, activeTab, onChange } = useTab(Table, props)
 let timer = null
 // 计算哪些按钮可见
 const calculateVisibleButtons = () => {
-   const selectNum = props?.pageState?.table?.()?.selectionConfig?.selectNum || 0
-  if(!selectNum)return
   clearTimeout(timer)
   timer = setTimeout(() => {
-    console.log('%c [ 计算 ]-384', 'font-size:13px; background:pink; color:#bf2c9f;', )
     const container = containerRef.value;
     const measureArea = measureRef.value;
     const buttons = batchBtns.value;
@@ -417,7 +480,7 @@ const calculateVisibleButtons = () => {
 
     visibleButtons.value = buttons.slice(0, visibleCount);
     hiddenButtons.value = buttons.slice(visibleCount);
-  },300)
+  }, 300)
 };
 
 // 事件
@@ -473,10 +536,24 @@ const cancel = () => {
 
 // 渲染默认单元格
 const renderDefaultCell = (row, column) => {
+  // 如果是 格式化方法存在，则使用格式化方法返回结果
   if (column.formatter) {
-    return column.formatter(row, column, row[column.prop], 0)
+    return column.formatter(row, column, row[column.prop], util,dayjs)
   }
-  return row[column.prop] || '-'
+  if(column.type === 'date') {
+    let value = row[column.prop]
+    if(!value) return '-'
+    if(String(value).length!==13){
+      value = value * 1000
+    }
+    return dayjs(value).format(column.format || 'YYYY-MM-DD HH:mm:ss')
+  }
+  // 如果是数字 且 使用了保留小数位数功能，则使用 fmtNum 格式化
+  if (column.digit !== undefined) {
+    return util.fmtNum(row[column.prop], false, column.digit)
+  }
+  // 否则返回数据本身，0 特例处理
+  return row[column.prop] === 0 ? 0 : row[column.prop] || '-'
 }
 
 // 处理每页条数改变
@@ -492,7 +569,7 @@ const handleCurrentChange = (val) => {
   updateList();
 }
 
-const updateList = async () => {
+const updateList = async (params = {}) => {
   await (Table.value?.config?.preFunc || ((() => Promise.resolve)))()
   loading.value = true;
   // 分页参数
@@ -504,16 +581,22 @@ const updateList = async () => {
   const extraParams = Table.value.config.extraParams || {}
   // 合并参数
   let prams = {
-    ...(Table.value.config.page ? pagePareams : {}),
-    ...extraParams.value
+    ...(props.pageCommonState.form || {}),
+    ...extraParams,
+    ...params,
   }
   // 参数转换
   if (typeof Table.value.config.transformPram === 'function') {
-    prams = Table.value.config.transformPram(prams)
+    prams = Table.value.config.transformPram(prams, { tabActive: active.value, activeTab: activeTab() })
   }
+  prams = {
+    ...prams,
+    ...(Table.value.config.page ? pagePareams : {}),
+  }
+  finalForm.value = prams
   // 请求数据
   Table.value.config.api(prams).then(res => {
-    if(res.success){
+    if (res.success) {
       tableData.value = res.data || [];
       defaultPageProps.value.total = res.total || 0;
     }
@@ -530,16 +613,16 @@ const resize = () => {
   });
 }
 onMounted(() => {
-  if(Table.value.config.selection){
+  if (Table.value.config.selection) {
     window.addEventListener('resize', resize)
     resize()
   }
-  if(Table.value.config.tab){
+  if (Table.value.config.tab) {
     initTabs()
   }
 })
 onUnmounted(() => {
-  if(Table.value.config.selection){
+  if (Table.value.config.selection) {
     window.removeEventListener('resize', resize)
   }
 })
@@ -550,6 +633,7 @@ defineExpose({
   selectionConfig,
   updateList,
   tableData,
+  selectNum
 })
 </script>
 
@@ -562,7 +646,7 @@ defineExpose({
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  /* background-color: #eee; */
+  background-color: #fff;
   height: 100%;
 }
 
@@ -667,7 +751,18 @@ defineExpose({
 :deep(.el-table .el-table__header-wrapper th) {
   background-color: #F6F8FC !important;
 }
-:deep(.el-button:hover){
-  background-color: transparent!important;
+
+:deep(.el-button:hover) {
+  background-color: transparent !important;
 }
+/* :deep(.el-table td.el-table__cell .cell){
+  display: flex;
+  align-items: center;
+  span{
+    white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   display: inline-block;
+  }
+} */
 </style>

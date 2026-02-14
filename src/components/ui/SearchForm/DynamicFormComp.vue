@@ -1,6 +1,6 @@
 <template>
   <el-select v-if="compType === 'ElSelect'"  v-bind="mergeProps" class="form-item">
-    <el-option  v-for="item in mergeProps.options" :key="item.value" :label="item.label" :value="item.value" />
+    <el-option  v-for="item in mergeProps.options" :key="item.value" :label="isUseLang? $t(item.label) : item.label" :value="item.value" />
   </el-select>
   <component v-else :is="comMap[compType || 'ElInput']" v-bind="mergeProps" ref="dynamicCompRef" class="form-item">
     <template v-for="(slotFn, slotName) in ($slots || {})" #[slotName]="slotProps = {}" :key="slotName">
@@ -11,8 +11,10 @@
 
 <script setup>
 import { computed, ref, useAttrs } from 'vue'
-import { ElInput, ElSelect, ElDatePicker, ElTimePicker, ElTimeSelect } from 'element-plus'
+import { ElInput, ElSelect, ElDatePicker, ElTimePicker, ElTimeSelect,ElInputNumber } from 'element-plus'
 import 'element-plus/dist/index.css'
+import useLangConfig from '../composables/useLangConfig.js'
+const { isUseLang } = useLangConfig()
 // ------------- Props 定义 -------------
 const props = defineProps({
   // 组件类型（如 'ElInput'、'ElSelect'）
@@ -46,6 +48,7 @@ const comMap = {
   ElDatePicker,
   ElTimePicker,
   ElTimeSelect,
+  ElInputNumber
 }
 const attrs = useAttrs()
 // ------------- 核心逻辑 -------------

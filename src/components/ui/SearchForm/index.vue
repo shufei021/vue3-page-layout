@@ -8,12 +8,14 @@
                             :style="{ 'grid-column': `span ${item.span || 1}` }">
                             <template #label>
                                 <el-text line-clamp="1"
-                                    style="max-width: 120px;background-color: #f7f8fa;padding: 0 8px;height:100%;box-sizing:  border-box;"
+                                    style="max-width: 220px;background-color: #f7f8fa;padding: 0 8px;height:100%;box-sizing:  border-box;display: flex;"
                                     v-if="item.label">
-                                    {{isUseLang.value ? $t(item.label) : item.label}}
+                                    {{isUseLang ? $t(item.label) : item.label}} <span v-if="item.type === 'currency'"> <SvgIcon name="currency" style="width: 12px;color: #1a1a1a;margin-left: 4px;"></SvgIcon> </span>
                                 </el-text>
                             </template>
+                            <RangeNumber :config="{item,form,resetAction}" v-if="item.compType === 'RangeNumber'" />
                             <DynamicFormComp 
+                                v-else
                                 v-model="form[item.prop]" 
                                 :model-event="item.modelEvent || 'input'"
                                 :comp-type="item.compType" 
@@ -21,29 +23,34 @@
                                 :comp-props="{ 
                                     clearable:true,
                                     ...item.compProps,
-                                    ...(item.compProps && item.compProps.placeholder ? { placeholder: item.compProps.placeholder } : {}), 
-                                    ...(item.compType === 'ElDatePicker' ? { startPlaceholder: item.compProps.startPlaceholder || '开始日期', endPlaceholder: item.compProps.endPlaceholder || '结束日期' } : {}) 
+                                    ...(item.compProps && item.compProps.placeholder ? { placeholder: isUseLang? $t(item.compProps.placeholder) : item.compProps.placeholder } : {}), 
+                                    ...(item.compType === 'ElDatePicker' ? { startPlaceholder: isUseLang? $t(item.compProps.startPlaceholder) : 'Start Date', endPlaceholder:  isUseLang? $t(item.compProps.endPlaceholder) : 'End Date' } : {}) 
                                 }">
                             </DynamicFormComp>
                         </el-form-item>
                         <!-- <CollectionCategory v-if="formCategory" :form="form" /> -->
                     </div>
-                    <div class="btn-group" :class="{noReset: !showRest }">
+                    <div class="btn-group" :style="{width:(config.btnGroupWidth) + 'px'}" :class="{noReset: !showRest }">
                         <el-button @click="reset" v-if="showRest && !isMore" style="width: 72px;">{{Lang.reset}}</el-button>
                         <el-button @click="submit" type="primary" style="margin:0">
                             <SvgIcon name="search" style="padding-right: 2px;"></SvgIcon> 
                             {{Lang.search}}
                         </el-button>
-                        <el-button @click="btn.click" v-bind="btn.props || {}" v-for="(btn, index) in actions"
-                            :type="btn.type" :key="index">{{ btn.name
-                            }}</el-button>
+                        <el-button 
+                            @click="btn.click(router)" 
+                            v-bind="btn.props || {}" 
+                            v-for="(btn, index) in actions"
+                            :key="index">
+                            <SvgIcon v-if="btn.icon" :name="btn.icon" style="padding-right: 2px;"></SvgIcon>
+                            {{ isUseLang ? $t(btn.name) : btn.name }}
+                        </el-button>
                     </div>
                 </el-form>
             </div>
         </div>
         <div class="status" @click="expand" v-if="isMore">
             <span style="color: #1447ff;" @click.stop="reset(1)">{{Lang.reset}}</span>
-            <span>{{ isOPen ? Lang.collapse : Lang.expand }}<el-icon :class="{ up: !isOPen }">
+            <span>{{ isOPen ? transform(Lang.PRIVATE_INFO.collapse,{}) : transform(Lang.PRIVATE_INFO.expand,{}) }}<el-icon :class="{ up: !isOPen }">
                     <DArrowRight />
                 </el-icon></span>
         </div>
@@ -55,14 +62,14 @@ import DynamicFormComp from './DynamicFormComp.vue'
 import { DArrowRight } from '@element-plus/icons-vue'
 import useLangConfig from '../composables/useLangConfig.js'
 import SvgIcon from '../SvgIcon/index.vue'
-const { Lang, isUseLang } = useLangConfig()
+// import CollectionCategory from './CollectionCategory.vue'
+import RangeNumber from './RangeNumber.vue'
+import { useRouter } from 'vue-router'
+const { Lang,transform, isUseLang } = useLangConfig()
+const router = useRouter()
 const props = defineProps({
     // 绑定值
     config: {
-        type: Object,
-        default: () => ({})
-    },
-    pageState:{
         type: Object,
         default: () => ({})
     }
@@ -72,36 +79,59 @@ const formRef = ref(null)
 const formItems = computed(() => props.config.formItems)
 const actions = computed(() => props.config.actions)
 const showRest = computed(() => props.config.showRest)
+const formCategory = computed(() => props.config.formCategory)
 const form = reactive({})
 const leftRef = ref(null)
-const isMore = ref(false)
+const isMore = ref(true)
 const isOPen = ref(false)
-const outerForm = ref({})
 watch(formItems, (newVal) => {
     newVal.forEach(item => {
-        if (!(item.prop in form)) {
-            form[item.prop] = item.defaultValue || ''
-            outerForm.value[item.prop] = item.defaultValue || ''
+        if(item.compType === 'RangeNumber'){
+            if (!(item.props[0] in form)) {
+                form[item.props[0]] = item.minDefaultValue
+            }
+            if (!(item.props[1] in form)) {
+                form[item.props[1]] = item.maxDefaultValue
+            }
+        } else{
+            if (!(item.prop in form)) {
+                form[item.prop] = item.defaultValue
+            }
+            if(item.compType === 'ElInputNumber'){
+                form[item.prop] = item.defaultValue || null
+            }
         }
     })
 }, { immediate: true })
 
+const resetAction =  ref(false)
+
 const reset = () => {
     clearTimeout(timer)
+    resetAction.value = true
     timer = setTimeout(() => {
         formRef?.value.resetFields?.()
+        resetAction.value = false
         emit('submit', toRaw(form))
-        isOPen.value = false
+         if(props.config.isPack){
+            isOPen.value = true
+            isMore.value = false
+        } else{
+            isOPen.value = false
+        }
     }, 300)
 }
 let timer = null
-
 const submit = () => {
     clearTimeout(timer)
     timer = setTimeout(() => {
-        outerForm.value = toRaw(form)
         emit('submit', toRaw(form))
-        isOPen.value = false
+        if(props.config.isPack){
+            isOPen.value = true
+            isMore.value = false
+        } else{
+            isOPen.value = false
+        }
     }, 300)
 }
 const expand = () => {
@@ -112,7 +142,12 @@ const resize = () => {
         const el = leftRef.value
         if (el) {
             const { offsetHeight } = el
-            isMore.value = offsetHeight > 32
+            if(props.config.isPack){
+             isOPen.value = true
+             isMore.value = false
+           } else{
+               isMore.value = offsetHeight > 50
+           }
         }
     });
 }
@@ -128,7 +163,6 @@ onUnmounted(() => {
 })
 defineExpose({
     form,
-    outerForm
 })
 </script>
 <style scoped lang="less">
@@ -143,7 +177,6 @@ defineExpose({
     position: relative;
     box-sizing: border-box;
     min-width: 965px;
-
     .content {
         width: 100%;
         max-height: 230px;
@@ -178,7 +211,7 @@ defineExpose({
     }
 
     .header-pack {
-        height: 32px;
+        height: 44px;
         overflow: hidden;
     }
 
@@ -187,72 +220,80 @@ defineExpose({
 
         .form {
             display: flex;
-
             .left {
                 flex: 1;
                 display: grid;
                 grid-template-columns: repeat(auto-fill, minmax(244px, 1fr));
                 gap: 10px;
-                align-items: flex-start;
-
+                align-items: flex-start; 
                 .el-form-item {
                     box-sizing: border-box;
                     border: 1px solid #E2E7F5;
+                     border-radius: 8px !important;
+                     overflow: hidden;
+                    
                     :deep(.el-form-item__label) {
                         padding: 0;
-                        height: 30px;
+                        // border-radius: 8px;
+                        border-top-left-radius: 8px;
+                        border-bottom-left-radius:8px ;
+                        overflow: hidden;
+                    }
+                     :deep(.label-has){
+                        border-top-left-radius: 0!important;
+                        border-bottom-left-radius: 0!important;
                     }
                 }
+                .form-item{
+                    height: 100%;
+                    //  box-shadow: 0 0 0 1px #dcdfe6 inset;
+                }
             }
-
             :deep(.el-select__wrapper) {
                 box-shadow: none;
-                border: none;
-                height: 30px;
-                box-sizing: border-box;
-                min-height: 30px !important;
+                // border: none;
+                // height: 40px;
             }
 
             :deep(.el-input__wrapper) {
-                box-shadow: none;
+                // box-shadow: 0 0 0 1px #dcdfe6 inset;
                 border: none;
-                height: 30px;
+                height: 40px !important;
+                overflow: hidden !important;
+                border-radius: 8px !important;
                 box-sizing: border-box;
+                box-shadow: none;
+                // height: 40px;
+                // box-shadow: 0 0 0 1px #dcdfe6 inset;
+            }
+            :deep(.el-textarea .el-textarea__inner){
+                // box-shadow: none!important;
+                // box-shadow: 0 0 0 1px #dcdfe6 inset;
+                border: none!important;
+                min-height: 40px!important;
+                box-sizing: border-box;
+                line-height: 32px;
             }
 
-            :deep(.el-textarea .el-textarea__inner) {
-                box-shadow: none !important;
-                border: none !important;
-                // min-height: 30px !important;
-                box-sizing: border-box;
-                // line-height: 30px;
-            }
         }
 
         .btn-group {
             padding-left: 10px;
-            width: 170px;
-            display: flex;
-            box-sizing: border-box;
-            justify-content: end;
-            gap: 10px;
+
             :deep(.el-button) {
-                // flex: 1;
-                flex-grow: 0;
-                flex-shrink: 0;
-                // height: 100%;
-                height: 32px;
-                line-height: 32px;
-                border-radius: 4px !important;
+                border-radius: 8px !important;
             }
-        }
-        .noReset{
-            width: 88px;
         }
     }
 
     :deep(.el-form--inline .el-form-item) {
         margin: 0;
+    }
+    :deep(.el-form--inline .el-form-item) {
+        margin: 0;
+    }
+    :deep(.el-form-item > label + .el-form-item__content .el-select__wrapper){
+        border: none;
     }
 
     .form-container {
@@ -308,10 +349,18 @@ defineExpose({
         border-top: none;
     }
 }
-
-:deep(.el-button [class*=el-icon] svg) {
+:deep(.el-button [class*=el-icon] svg){
     width: 24px;
     height: 24px;
+}
+
+:deep(.el-textarea__inner) {
+  /* 隐藏滚动条（现代浏览器） */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+:deep(.el-textarea__inner::-webkit-scrollbar) {
+  display: none; /* Chrome/Safari */
 }
 
 </style>

@@ -17,9 +17,9 @@
 </template>
 <script setup>
 import { computed } from 'vue';
-import { useRouter } from 'vue-router'
-import SvgIcon from '../SvgIcon/index.vue'
 import useLangConfig from '../composables/useLangConfig.js'
+import  SvgIcon from '../SvgIcon/index.vue'
+import { useRouter } from 'vue-router'
 const { isUseLang } = useLangConfig()
 const router = useRouter()
 defineOptions({
@@ -29,15 +29,11 @@ const props = defineProps({
     config: {
         type: Object,
         default: () => ({})
-    },
-    pageState: {
-        type: Object,
-        default: () => ({})
     }
 })
 
 const left = computed(() => { 
-    return (props.config?.path || []).map(item => {
+    return props.config.path.map(item => {
         if(typeof item === 'string'){
             return {
                 name: item
@@ -48,17 +44,12 @@ const left = computed(() => {
     })
 })
 const right = computed(() => { 
-    return props.config?.buttons || []
-})
-
-defineExpose({
-    left: ()=>left.value,
-    right: ()=>right.value
+    return props.config.buttons || []
 })
 </script>
-<style scoped>
+<style scoped lang="less">
 .page-header {
-    height: 56px;
+    height: 54px;
     display: flex;
     box-sizing: border-box;
     justify-content: space-between;
@@ -81,5 +72,25 @@ defineExpose({
 .breadcrumb {
     display: flex;
     align-items: center;
+}
+:deep(.el-breadcrumb){
+    font-size: 12px;
+    color: #536387;
+    font-family: "Switzer-Regular";
+}
+:deep(.el-breadcrumb__inner.is-link){
+    color: #98A4BF!important;
+    font-weight: normal;
+}
+:deep(.el-breadcrumb__separator){
+    font-size: 18px;
+    font-weight: normal;
+    margin-left: 4px!important;
+}
+:deep(.el-breadcrumb .el-breadcrumb__item:last-child){
+    .el-breadcrumb__inner{
+        color: #536387!important;
+       font-weight: normal;
+    }
 }
 </style>

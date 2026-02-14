@@ -3,11 +3,17 @@ import SearchForm from "./SearchForm/index.vue";
 import CustomTable from "./CustomTable/index.vue";
 import Page from "./Page/index.vue";
 import SvgIcon from "./SvgIcon/index.vue";
+import useInstanceAttribute from "./composables/useInstanceAttribute.js";
+import RangeNumber from "./SearchForm/RangeNumber.vue";
+import useCustomDialog from "./composables/useCustomDialog.js";
+import useDialog from "./composables/useDialog.js";
+import useConfirm from "./composables/useConfirm.js";
+// import { getLanguageValue } from "@/utils/lang";
+import util from "./utils";
+import dayjs from "dayjs";
+import { ElMessage, ElMessageBox } from "element-plus";
+let t = (v)=>t
 const langSet = (app) => {
-  if(!app.config.globalProperties?.$t){
-    app.config.globalProperties.$isNotLang = true
-    app.config.globalProperties.$t = (val)=>val
-  }
   app.config.globalProperties.$uiLangConfig = {
     reset: {
       cn: "重置",
@@ -17,7 +23,7 @@ const langSet = (app) => {
     search: {
       cn: "查询",
       en: "Search",
-      origin: "common.search",
+      origin: "common.query",
     },
     add: {
       cn: "新增",
@@ -142,7 +148,18 @@ const langSet = (app) => {
     // 内部使用，可以根据需求继续扩展语言包
     PRIVATE_INFO: {
       isPrivate: true,
-
+      expand: {
+        cn: "展开",
+        en: "Expand",
+        ar: "توسّع",
+        origin: "common.expand",
+      },
+      collapse: {
+        cn: "收起",
+        en: "Collapse",
+        ar: "مُغلق",
+        origin: "common.collapse",
+      },
       total: {
         cn: "已选 {count} 条",
         en: "{count} selected",
@@ -155,5 +172,25 @@ const langSet = (app) => {
       },
     },
   };
+  if(app.config.globalProperties.$t){
+    t = app.config.globalProperties.$t
+  }
 };
-export { Header, SearchForm, CustomTable, Page, SvgIcon, langSet };
+export {
+  Header,
+  SearchForm,
+  CustomTable,
+  Page,
+  SvgIcon,
+  langSet,
+  useInstanceAttribute,
+  RangeNumber,
+  useCustomDialog,
+  useDialog,
+  useConfirm,
+  util,
+  dayjs,
+  t,
+  ElMessage,
+  ElMessageBox,
+};

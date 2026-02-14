@@ -8,8 +8,8 @@ import router from "./router";
 const app = createApp(App)
 app.use(router);
 langSet(app)
-// app.config.globalProperties.$t = (val)=>{
-//     return val 
-// }
+app.config.globalProperties.$t = (val)=>{
+    return val 
+}
 app.use(ElementPlus)
 app.mount('#app')

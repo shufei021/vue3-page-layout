@@ -36,6 +36,12 @@ const props = defineProps({
     }
 })
 const  isFunc = (val) => typeof val === 'function'
+watch(() => props.config.resetAction, (newVal) => {
+    if(newVal){
+        props.config.form[props.config.item.props[0]] = undefined
+        props.config.form[props.config.item.props[1]] = undefined
+     }
+})
 </script>
 <style scoped lang="less">
 .range-number{

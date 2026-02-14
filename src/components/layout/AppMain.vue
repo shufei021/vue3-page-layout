@@ -43,9 +43,10 @@
 import { ref } from 'vue'
 import Sidebar from './Sidebar.vue'
 import { routes } from '@/router'
+import { useRouter } from 'vue-router'
 const activeMenu = ref('0-0')
 const editableTabsValue = ref('0-0')
-
+const router = useRouter()
 
 const editableTabs = ref([
     {
@@ -79,6 +80,10 @@ const handleTabsEdit = (
     // editableTabsValue.value = newTabName
   } else if (action === 'remove') {
     console.log('%c [ action ]-81', 'font-size:13px; background:pink; color:#bf2c9f;', action)
+    editableTabs.value = editableTabs.value.filter((tab) => tab.name !== targetName)
+    editableTabsValue.value = editableTabs.value[editableTabs.value.length - 1]?.name || ''
+    activeMenu.value = editableTabsValue.value
+    router.replace({ path: editableTabs.value[editableTabs.value.length - 1].path || '/' })
     // const tabs = editableTabs.value
     // let activeName = editableTabsValue.value
     // if (activeName === targetName) {

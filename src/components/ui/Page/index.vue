@@ -1,21 +1,27 @@
 <template>
   <!-- 表格页面完整模板 -->
     <div class="page">
+      <slot name="page-header"></slot>
       <!-- 头部: 左侧面包屑或则自定义或则不显示、右侧操作按钮群组 -->
-        <Header v-if="headerConfig" :config="headerConfig" ref="headerRef" :pageState="pageState">
+        <Header v-if="headerConfig" :config="headerConfig">
           <template #header-left>
             <slot name="header-left"></slot>
           </template>
         </Header>
         <!-- 搜索表单 -->
-        <SearchForm v-if="formConfig" :config="formConfig" @submit="submit" ref="formRef" :pageState="pageState"></SearchForm>
+        <SearchForm v-if="formConfig" :config="formConfig" ref="formRef" @submit="submit"></SearchForm>
+        <slot name="custom"></slot>
         <!-- 表格 -->
-        <CustomTable v-if="tableConfig" :config="tableConfig" ref="tableRef" :pageState="pageState"></CustomTable>
+        <CustomTable v-if="tableConfig" :pageCommonState="pageCommonState" ref="rableRef" :config="tableConfig">
+          <template #table-header>
+            <slot name="table-header"></slot>
+          </template>
+        </CustomTable>
         <slot name="dialog"></slot>
     </div>
 </template>
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, toRaw } from "vue";
 import Header from "../Header/index.vue";
 import SearchForm from "../SearchForm/index.vue";
 import CustomTable from "../CustomTable/index.vue";
@@ -35,31 +41,29 @@ const formConfig = computed(() => {
 const tableConfig = computed(() => {
   return props.config.table;
 });
-const headerRef = ref(null);
+
+const rableRef = ref(null);
 const formRef = ref(null);
-const tableRef = ref(null);
-//  收集子组件的状态统一到父组件，进行对外抛出进行访问和调用
-const pageState = computed(() => {
+const pageCommonState = computed(() => {
   return {
-    header:()=> headerRef.value,
-    form:()=> formRef.value,
-    table:()=> tableRef.value,
+    table: rableRef,
+    form: formRef.value? toRaw(formRef.value.form) : {},
   };
-})
+});
 const submit = () => {
-  tableRef.value.handleCommand('cancel');
-  tableRef.value.handleCurrentChange(1);
+  rableRef.value.handleCommand('cancel');
+  rableRef.value.handleCurrentChange(1);
 };
 defineExpose({
-  handleCommand:(name)=> tableRef.value.handleCommand(name),
-  updateList: () => tableRef.value.updateList(),
-  selectionConfig: () => tableRef.value.selectionConfig,
-  tableData: () => tableRef.value.tableData,
-  pageState: pageState,
+  handleCommand:(name)=> rableRef.value.handleCommand(name),
+  updateList: () => rableRef.value.updateList(),
+  selectionConfig: () => rableRef.value.selectionConfig,
+  tableData: () => rableRef.value.tableData,
 })
 </script>
 <style scoped>
 .page {
     --el-color-primary: #0052d9;
 }
+
 </style>

@@ -18,6 +18,18 @@ export const routes = [
         name: 'CustomTable',
         component: () =>  import('@/views/CustomTable/index.vue'),
         meta: { title: '自定义表格', index :'1-1'  }
+      },
+       {
+        path: '/case1',
+        name: 'Case1',
+        component: () =>  import('@/views/Case/Case1.vue'),
+        meta: { title: '搜索', index :'1-2'  }
+      },
+       {
+        path: '/full',
+        name: 'Full',
+        component: () =>  import('@/views/Case/Full.vue'),
+        meta: { title: '全功能', index :'1-3'  }
       }
     ]
   },

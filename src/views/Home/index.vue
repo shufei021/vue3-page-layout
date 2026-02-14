@@ -6,6 +6,7 @@
       <el-button type="info" @click="to(3)">Header 示例</el-button>
       <el-button type="warning" @click="to(4)">SearchForm 示例</el-button>
       <el-button type="danger" @click="to(5)">Table 示例</el-button>
+      首页
     </div>
   </template>
   

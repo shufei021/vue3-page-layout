@@ -7,14 +7,13 @@ export default function useLang(){
         return (localStorage.getItem('lang') || 'en-US').includes('ar') ? 'ar' : 'en'
     })
     const Lang = computed(() => {
-        const langConfig = instance?.appContext.config.globalProperties.$uiLangConfig
-        const isNotLang = instance?.appContext.config.globalProperties?.$isNotLang
+        const langConfig = instance?.appContext?.config?.globalProperties?.$uiLangConfig ||{}
         return new Proxy(langConfig, {
             get(target, key) {
                 if(target[key].isPrivate){ // 私有字段
                     return target[key]
                 } else{
-                    return isNotLang? target[key].cn : isUseLang.value ? instance.proxy.$t(target[key].origin) : target[key].en
+                    return isUseLang.value ? instance.proxy.$t(target[key].origin) : target[key].en
                 }
             }
         })
